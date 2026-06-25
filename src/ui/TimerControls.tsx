@@ -124,17 +124,17 @@ export function TimerControls({
   };
 
   const buttonClass =
-    'rounded-md px-4 py-2 text-sm font-medium focus:outline-none ' +
-    'focus-visible:ring-2 focus-visible:ring-offset-2';
+    'inline-flex items-center justify-center rounded-full px-7 py-2.5 text-base font-medium ' +
+    'transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-ring disabled:opacity-50';
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Timer controls">
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3" role="group" aria-label="Timer controls">
         {(status === 'idle' || status === 'completed') && (
           <button
             type="button"
             onClick={onStart}
-            className={`${buttonClass} bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600`}
+            className={`${buttonClass} bg-accent text-white shadow-sm hover:bg-accent-hover`}
           >
             Start
           </button>
@@ -144,7 +144,7 @@ export function TimerControls({
           <button
             type="button"
             onClick={onPause}
-            className={`${buttonClass} bg-amber-500 text-white hover:bg-amber-600 focus-visible:ring-amber-500`}
+            className={`${buttonClass} bg-ink/5 text-ink hover:bg-ink/10`}
           >
             Pause
           </button>
@@ -154,7 +154,7 @@ export function TimerControls({
           <button
             type="button"
             onClick={onResume}
-            className={`${buttonClass} bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-600`}
+            className={`${buttonClass} bg-accent text-white shadow-sm hover:bg-accent-hover`}
           >
             Resume
           </button>
@@ -165,7 +165,7 @@ export function TimerControls({
           <button
             type="button"
             onClick={() => setConfirmingReset(true)}
-            className={`${buttonClass} bg-slate-200 text-slate-900 hover:bg-slate-300 focus-visible:ring-slate-400`}
+            className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-base font-medium text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-ring"
           >
             Reset
           </button>
@@ -175,25 +175,27 @@ export function TimerControls({
       {/* Full-duration confirmation affordance for reset (Req 5.5). */}
       {showReset && confirmingReset && (
         <div
-          className="flex flex-wrap items-center gap-2 rounded-md border border-slate-300 bg-slate-50 p-3"
+          className="flex flex-col items-center gap-3 rounded-3xl border border-black/5 bg-canvas p-4"
           role="group"
           aria-label="Confirm reset"
         >
-          <p className="text-sm text-slate-700">{confirmPrompt}</p>
-          <button
-            type="button"
-            onClick={handleConfirmReset}
-            className={`${buttonClass} bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-600`}
-          >
-            Confirm reset
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirmingReset(false)}
-            className={`${buttonClass} bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 focus-visible:ring-slate-400`}
-          >
-            Cancel
-          </button>
+          <p className="text-sm text-ink-soft">{confirmPrompt}</p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleConfirmReset}
+              className={`${buttonClass} bg-[#ff3b30] text-white hover:bg-[#ff453a]`}
+            >
+              Confirm reset
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingReset(false)}
+              className={`${buttonClass} bg-white text-ink ring-1 ring-inset ring-black/10 hover:bg-ink/5`}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 

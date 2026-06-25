@@ -44,55 +44,69 @@ export function ActivityLogView({ entries, error }: ActivityLogViewProps) {
   const hasEntries = rows.length > 0;
 
   return (
-    <section aria-label="Activity log" className="flex flex-col gap-3 p-6">
-      <h2 className="text-lg font-semibold text-slate-900">Activity log</h2>
+    <section
+      aria-label="Activity log"
+      className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
+    >
+      <h2 className="text-lg font-semibold tracking-tight text-ink">Activity log</h2>
 
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700"
+        >
           {/* Surface the failure but keep existing entries visible (Req 8.4, 8.5). */}
           The activity log could not be updated. Showing the last known entries.
         </p>
       )}
 
       {hasEntries ? (
-        <table className="w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-300 text-slate-600">
-              <th scope="col" className="px-3 py-2 font-medium">
-                Date
-              </th>
-              <th scope="col" className="px-3 py-2 font-medium">
-                Start
-              </th>
-              <th scope="col" className="px-3 py-2 font-medium">
-                End
-              </th>
-              <th scope="col" className="px-3 py-2 font-medium">
-                Description
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((entry) => (
-              <tr key={entry.id} className="border-b border-slate-100">
-                <td className="px-3 py-2 font-mono tabular-nums text-slate-700">
-                  {entry.date}
-                </td>
-                <td className="px-3 py-2 font-mono tabular-nums text-slate-700">
-                  {entry.startTime}
-                </td>
-                <td className="px-3 py-2 font-mono tabular-nums text-slate-700">
-                  {entry.endTime}
-                </td>
-                <td className="px-3 py-2 text-slate-900">{entry.description}</td>
+        <div className="overflow-hidden rounded-2xl border border-black/5">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="bg-canvas text-xs uppercase tracking-wide text-ink-muted">
+                <th scope="col" className="px-4 py-2.5 font-medium">
+                  Date
+                </th>
+                <th scope="col" className="px-4 py-2.5 font-medium">
+                  Start
+                </th>
+                <th scope="col" className="px-4 py-2.5 font-medium">
+                  End
+                </th>
+                <th scope="col" className="px-4 py-2.5 font-medium">
+                  Description
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((entry) => (
+                <tr
+                  key={entry.id}
+                  className="border-t border-black/5 transition-colors hover:bg-canvas/60"
+                >
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-ink-soft">
+                    {entry.date}
+                  </td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-ink-soft">
+                    {entry.startTime}
+                  </td>
+                  <td className="px-4 py-2.5 font-mono tabular-nums text-ink-soft">
+                    {entry.endTime}
+                  </td>
+                  <td className="px-4 py-2.5 text-ink">{entry.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
-        <p role="status" className="text-sm text-slate-500">
-          No activity has been logged yet.
-        </p>
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-black/10 bg-canvas/50 px-6 py-10 text-center">
+          <span aria-hidden className="text-2xl">📝</span>
+          <p role="status" className="text-sm text-ink-muted">
+            No activity has been logged yet.
+          </p>
+        </div>
       )}
     </section>
   );

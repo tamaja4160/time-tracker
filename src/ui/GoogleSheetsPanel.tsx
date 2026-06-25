@@ -300,9 +300,14 @@ export function GoogleSheetsPanel({
   return (
     <section
       aria-label="Google Sheets"
-      className="flex flex-col gap-4 rounded-lg border border-slate-200 p-4"
+      className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
     >
-      <h2 className="text-base font-semibold text-slate-800">Google Sheets</h2>
+      <div className="flex flex-col">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Google Sheets</h2>
+        <p className="text-sm text-ink-muted">
+          Write completed sessions straight into a spreadsheet you control.
+        </p>
+      </div>
 
       {/* Connection status + controls */}
       <div className="flex flex-col gap-2">
@@ -319,7 +324,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleConnect()}
               disabled={busy}
-              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
             </button>
@@ -328,7 +333,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleSignOut()}
               disabled={busy}
-              className="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Sign out
             </button>
@@ -385,7 +390,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleCreateSheet()}
               disabled={busy || !nameValidation.ok}
-              className="self-start rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Create sheet
             </button>
@@ -473,7 +478,7 @@ export function GoogleSheetsPanel({
                 type="button"
                 onClick={() => void handleSelectSheet()}
                 disabled={busy}
-                className="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Select
               </button>

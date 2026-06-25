@@ -192,11 +192,12 @@ export function App({
       }
 
       // Success: update the displayed log (Req 8.3), clear the prompt error,
-      // and return the timer to the not-running state so the prompt closes and
-      // a new session can be started.
+      // then immediately begin the next session of the same duration so the
+      // Pomodoro loop continues hands-free (reset → start).
       setEntries(nextLog);
       setActivitySubmitError(null);
       controls.reset();
+      controls.start();
 
       // Also write the entry to the chosen Google Sheet, if one is configured
       // (Req 13.1). The local entry is already saved, so a write failure keeps
@@ -229,23 +230,31 @@ export function App({
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 px-6 py-4">
-        <h1 className="text-2xl font-semibold">Time Tracker</h1>
+    <div className="min-h-screen bg-canvas text-ink">
+      <header className="sticky top-0 z-10 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-3xl items-center gap-2 px-6 py-4">
+          <h1 className="text-lg font-semibold tracking-tight">Time Tracker</h1>
+        </div>
       </header>
 
       {/* Shared transient/persistent error region (Req 13.5). */}
-      <ErrorBanner errors={errors} onDismiss={dismissError} />
+      <div className="mx-auto max-w-3xl">
+        <ErrorBanner errors={errors} onDismiss={dismissError} />
 
-      {writeNotice && (
-        <div className="px-6 pt-3">
-          <p role="status" aria-live="polite" className="text-sm text-emerald-700">
-            {writeNotice}
-          </p>
-        </div>
-      )}
+        {writeNotice && (
+          <div className="px-6 pt-4">
+            <p
+              role="status"
+              aria-live="polite"
+              className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700"
+            >
+              {writeNotice}
+            </p>
+          </div>
+        )}
+      </div>
 
-      <main className="mx-auto flex max-w-3xl flex-col gap-8 p-6">
+      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
         {/* Primary content: the timer (Req 1.1), sharing the lifted state. */}
         <TimerScreen clock={clock} timer={timer} />
 

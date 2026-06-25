@@ -83,15 +83,21 @@ export function ExportBar({ entries, download = defaultDownload }: ExportBarProp
   return (
     <section
       aria-label="Export activity log"
-      className="flex flex-col items-start gap-2"
+      className="flex flex-col gap-3 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
     >
-      <button
-        type="button"
-        onClick={handleExport}
-        className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
-      >
-        Export CSV
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold tracking-tight text-ink">Export</h2>
+          <p className="text-sm text-ink-muted">Download your full log as a CSV file.</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleExport}
+          className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-2.5 text-base font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+        >
+          Export CSV
+        </button>
+      </div>
 
       {status.kind === 'success' && (
         <p role="status" aria-live="polite" className="text-sm text-emerald-700">

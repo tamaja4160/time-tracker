@@ -90,23 +90,26 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
   const message = validationMessage ?? submitError ?? null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm animate-fade-in">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl"
+        className="w-full max-w-sm rounded-4xl bg-white p-7 shadow-card-lg animate-scale-in"
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <h2 id={titleId} className="text-lg font-semibold text-slate-900">
-            {ACTIVITY_PROMPT_MESSAGE}
-          </h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5 text-center">
+            <h2 id={titleId} className="text-xl font-semibold tracking-tight text-ink">
+              {ACTIVITY_PROMPT_MESSAGE}
+            </h2>
+          </div>
 
           <input
             ref={inputRef}
             type="text"
             value={text}
             maxLength={100}
+            placeholder="e.g. wrote design"
             aria-invalid={message != null}
             aria-describedby={message != null ? errorId : undefined}
             onChange={(event) => {
@@ -115,18 +118,18 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
                 setValidationMessage(null);
               }
             }}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 aria-[invalid=true]:border-red-500"
+            className="w-full rounded-2xl border border-black/10 bg-canvas px-4 py-3 text-center text-lg text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-ring/30 aria-[invalid=true]:border-red-500"
           />
 
           {message != null && (
-            <p id={errorId} role="alert" className="text-sm text-red-600">
+            <p id={errorId} role="alert" className="text-center text-sm text-red-600">
               {message}
             </p>
           )}
 
           <button
             type="submit"
-            className="rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+            className="rounded-full bg-accent px-4 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
           >
             Save
           </button>

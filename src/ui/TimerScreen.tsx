@@ -69,17 +69,15 @@ function TimerScreenContent({
   const isRunning = state.status === 'running';
 
   return (
-    <section aria-label="Timer" className="flex flex-col items-center gap-6 p-6">
-      {/* Set the Configured_Duration; disabled while running (Req 2.1, 2.4). */}
-      <DurationInput
-        configuredDurationSec={state.configuredDurationSec}
-        disabled={isRunning}
-        onCommit={controls.setDuration}
-      />
-
-      {/* Remaining time in MM:SS with the default-fallback badge (Req 1.3, 1.5). */}
+    <section
+      aria-label="Timer"
+      className="flex flex-col items-center gap-8 rounded-4xl border border-black/5 bg-white px-6 py-10 shadow-card sm:px-10"
+    >
+      {/* Remaining time in MM:SS with a circular progress ring (Req 1.3, 1.5). */}
       <TimerDisplay
         remainingSec={state.remainingSec}
+        configuredDurationSec={state.configuredDurationSec}
+        status={state.status}
         usingDefaultFallback={state.usingDefaultFallback}
       />
 
@@ -92,6 +90,13 @@ function TimerScreenContent({
         onPause={controls.pause}
         onResume={controls.resume}
         onReset={controls.reset}
+      />
+
+      {/* Set the Configured_Duration; disabled while running (Req 2.1, 2.4). */}
+      <DurationInput
+        configuredDurationSec={state.configuredDurationSec}
+        disabled={isRunning}
+        onCommit={controls.setDuration}
       />
     </section>
   );

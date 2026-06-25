@@ -76,8 +76,8 @@ export function DurationInput({
   }
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+    <div className="flex flex-col items-center gap-1.5">
+      <label className="flex items-center gap-3 text-sm font-medium text-ink-soft">
         <span>Duration (minutes)</span>
         <input
           type="number"
@@ -101,7 +101,7 @@ export function DurationInput({
               commit((event.target as HTMLInputElement).value);
             }
           }}
-          className="w-20 rounded-md border border-slate-300 px-2 py-1 text-center font-mono tabular-nums disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 aria-[invalid=true]:border-red-500"
+          className="w-20 rounded-xl border border-black/10 bg-canvas px-3 py-1.5 text-center font-medium tabular-nums text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
         />
       </label>
 
