@@ -298,17 +298,7 @@ export function GoogleSheetsPanel({
   const connected = connection.connected && !needsReauth;
 
   return (
-    <section
-      aria-label="Google Sheets"
-      className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
-    >
-      <div className="flex flex-col">
-        <h2 className="text-lg font-semibold tracking-tight text-ink">Google Sheets</h2>
-        <p className="text-sm text-ink-muted">
-          Write completed sessions straight into a spreadsheet you control.
-        </p>
-      </div>
-
+    <div className="flex flex-col gap-4">
       {/* Connection status + controls */}
       <div className="flex flex-col gap-2">
         <p className="text-sm text-slate-700">
@@ -535,6 +525,6 @@ export function GoogleSheetsPanel({
           {statusMessage}
         </p>
       )}
-    </section>
+    </div>
   );
 }

@@ -27,7 +27,6 @@ import type { Clock } from '../types/clock';
 import type { TimerState } from '../types/timer';
 import { systemClock } from '../infra/clock';
 import { useTimer, type TimerControls as TimerControlActions, type UseTimerResult } from './useTimer';
-import { DurationInput } from './DurationInput';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
 
@@ -66,8 +65,6 @@ function TimerScreenContent({
   state: TimerState;
   controls: TimerControlActions;
 }) {
-  const isRunning = state.status === 'running';
-
   return (
     <section
       aria-label="Timer"
@@ -89,13 +86,6 @@ function TimerScreenContent({
         onPause={controls.pause}
         onResume={controls.resume}
         onReset={controls.reset}
-      />
-
-      {/* Set the Configured_Duration; disabled while running (Req 2.1, 2.4). */}
-      <DurationInput
-        configuredDurationSec={state.configuredDurationSec}
-        disabled={isRunning}
-        onCommit={controls.setDuration}
       />
     </section>
   );

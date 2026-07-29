@@ -128,6 +128,7 @@ describe('Append/persist failure retention (Req 7.5)', () => {
     render(
       <App
         clock={clock}
+        initialDurationSec={60}
         logStore={failingStore}
         authClient={makeStubAuth()}
         sheetsConnector={makeStubConnector()}
@@ -136,10 +137,7 @@ describe('Append/persist failure retention (Req 7.5)', () => {
     // Let the panel's async mount status settle inside act().
     await act(async () => {});
 
-    // Configure a 1-minute session so it can complete quickly, then start it.
-    const durationInput = screen.getByRole('spinbutton');
-    fireEvent.change(durationInput, { target: { value: '1' } });
-    fireEvent.blur(durationInput);
+    // Start a 1-minute session (duration set via initialDurationSec prop).
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
     // Advance wall-clock past the end and fire the countdown tick to complete.
@@ -149,13 +147,13 @@ describe('Append/persist failure retention (Req 7.5)', () => {
     });
 
     // The activity prompt is now open; submit a valid description.
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole('dialog', { name: /what did you do/i });
     const input = within(dialog).getByRole('textbox') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'wrote tests' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /save/i }));
 
     // The prompt stays open with the entered text retained (Req 7.5).
-    const stillOpen = screen.getByRole('dialog');
+    const stillOpen = screen.getByRole('dialog', { name: /what did you do/i });
     expect(stillOpen).toBeInTheDocument();
     expect(
       (within(stillOpen).getByRole('textbox') as HTMLInputElement).value,

@@ -53,11 +53,14 @@ import { ActivityPrompt } from './ActivityPrompt';
 import { ActivityLogView } from './ActivityLogView';
 import { ExportBar } from './ExportBar';
 import { GoogleSheetsPanel } from './GoogleSheetsPanel';
+import { CollapsibleSection } from './CollapsibleSection';
 import { ErrorBanner, type AppError } from './ErrorBanner';
 
 export interface AppProps {
   /** Injectable clock for deterministic tests (defaults to {@link systemClock}). */
   clock?: Clock;
+  /** Initial configured duration in seconds for tests (defaults to 15 min). */
+  initialDurationSec?: number;
   /** Injectable {@link LogStore} (defaults to a localStorage-backed store). */
   logStore?: LogStore;
   /** Injectable auth client (defaults to the Option A browser auth client). */
@@ -76,6 +79,7 @@ const unavailableFetch = (() =>
 
 export function App({
   clock = systemClock,
+  initialDurationSec,
   logStore: logStoreProp,
   authClient: authClientProp,
   sheetsConnector: sheetsConnectorProp,
@@ -112,7 +116,7 @@ export function App({
   );
 
   // --- Timer state (lifted so prompt + log share the same session) ----------
-  const timer = useTimer(clock);
+  const timer = useTimer(clock, initialDurationSec);
   const { state, controls } = timer;
 
   // --- Notifications: OS notification on completion + tab-title countdown ----
@@ -411,7 +415,21 @@ export function App({
       </div>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
-        {/* Primary content: the timer (Req 1.1), sharing the lifted state. */}
+        {/* Video hero — replace VIDEO_ID with your YouTube short ID */}
+        <div className="overflow-hidden rounded-4xl border border-black/5 bg-white shadow-card">
+          <div className="relative w-full" style={{ paddingBottom: '177.78%' /* 9:16 for Shorts */ }}>
+            {/* TODO: replace VIDEO_ID below with your YouTube Short video ID */}
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src="https://www.youtube.com/embed/VIDEO_ID?autoplay=0&rel=0&modestbranding=1"
+              title="Why this app exists"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
+        {/* Primary content: the timer */}
         <TimerScreen
           clock={clock}
           timer={{
@@ -428,15 +446,25 @@ export function App({
         {/* Activity log (most-recent-first, live updates on append). */}
         <ActivityLogView entries={entries} />
 
-        {/* CSV export. */}
-        <ExportBar entries={entries} />
+        {/* CSV export — hidden behind a collapsible toggle. */}
+        <CollapsibleSection
+          label="Export"
+          description="Download your log as a CSV file."
+        >
+          <ExportBar entries={entries} />
+        </CollapsibleSection>
 
-        {/* Client-only Google Sheets integration. */}
-        <GoogleSheetsPanel
-          authClient={authClient}
-          sheetsConnector={sheetsConnector}
-          onError={pushError}
-        />
+        {/* Google Sheets — hidden behind a collapsible toggle. */}
+        <CollapsibleSection
+          label="Connect to Google Sheets"
+          description="Write sessions straight to a spreadsheet you control."
+        >
+          <GoogleSheetsPanel
+            authClient={authClient}
+            sheetsConnector={sheetsConnector}
+            onError={pushError}
+          />
+        </CollapsibleSection>
       </main>
 
       {/* Completion prompt; retains entered text on append/persist failure. */}

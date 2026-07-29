@@ -68,28 +68,18 @@ export function ExportBar({ entries, download = defaultDownload }: ExportBarProp
 
   function handleExport(): void {
     try {
-      // Pure serialization first (Req 10.1-10.5); never mutates `entries`.
       const csv = toCsv(entries);
       download(EXPORT_FILENAME, csv);
-      // File produced and made available — confirm success (Req 10.6).
       setStatus({ kind: 'success' });
     } catch {
-      // Producing/delivering the file failed: show an error and leave the
-      // Activity_Log unchanged (Req 10.7). `entries` is read-only here.
       setStatus({ kind: 'error' });
     }
   }
 
   return (
-    <section
-      aria-label="Export activity log"
-      className="flex flex-col gap-3 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
-    >
+    <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <h2 className="text-lg font-semibold tracking-tight text-ink">Export</h2>
-          <p className="text-sm text-ink-muted">Download your full log as a CSV file.</p>
-        </div>
+        <p className="text-sm text-ink-muted">Download your full log as a CSV file.</p>
         <button
           type="button"
           onClick={handleExport}
@@ -110,6 +100,6 @@ export function ExportBar({ entries, download = defaultDownload }: ExportBarProp
           Export failed. Your activity log was not changed — please try again.
         </p>
       )}
-    </section>
+    </div>
   );
 }

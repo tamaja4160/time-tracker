@@ -76,10 +76,11 @@ function makeFakeSheetsConnector(): BrowserSheetsConnector {
  * Render the wired `App` with deterministic fakes and a controllable clock,
  * then flush the mount-time async status read so no act warnings leak.
  */
-async function renderApp(clock: FakeClock) {
+async function renderApp(clock: FakeClock, initialDurationSec?: number) {
   const utils = render(
     <App
       clock={clock}
+      initialDurationSec={initialDurationSec}
       logStore={makeInMemoryLogStore()}
       authClient={makeFakeAuthClient()}
       sheetsConnector={makeFakeSheetsConnector()}
@@ -177,7 +178,7 @@ describe('App component/DOM behaviour (fake timers)', () => {
   });
 
   test('logs a completed session and shows it live in the activity log (Req 8.3)', async () => {
-    await renderApp(clock);
+    await renderApp(clock, 60);
 
     // Empty-state initially: no entries logged yet.
     expect(
@@ -185,9 +186,6 @@ describe('App component/DOM behaviour (fake timers)', () => {
     ).toBeInTheDocument();
 
     // Use a 1-minute session to reach completion quickly and deterministically.
-    const durationInput = screen.getByLabelText(/duration \(minutes\)/i);
-    fireEvent.change(durationInput, { target: { value: '1' } });
-    fireEvent.blur(durationInput);
     expect(screen.getByRole('timer')).toHaveTextContent('01:00');
 
     startSession();
@@ -195,7 +193,7 @@ describe('App component/DOM behaviour (fake timers)', () => {
     // Advance to (and past) zero: the session completes and the prompt opens.
     advance(SECONDS_PER_MINUTE * 1000);
 
-    const dialog = screen.getByRole('dialog');
+    const dialog = screen.getByRole('dialog', { name: /what did you do/i });
     expect(
       within(dialog).getByText('What did you do (1 or 2 words)?'),
     ).toBeInTheDocument();
@@ -208,7 +206,7 @@ describe('App component/DOM behaviour (fake timers)', () => {
 
     expect(screen.getByText('wrote tests')).toBeInTheDocument();
     // The prompt closed and the empty-state is gone now there is an entry.
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /what did you do/i })).not.toBeInTheDocument();
     expect(
       screen.queryByText(/no activity has been logged yet/i),
     ).not.toBeInTheDocument();
