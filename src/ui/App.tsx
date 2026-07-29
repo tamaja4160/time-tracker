@@ -444,17 +444,8 @@ export function App({
           }}
         />
 
-        {/* Activity log (most-recent-first, live updates on append). */}
-        <ActivityLogView entries={entries} />
-
-        {/* CSV export — label left, button right, no accordion. */}
-        <div className="flex items-center justify-between gap-4 rounded-4xl border border-black/5 bg-white px-6 py-5 shadow-card sm:px-7">
-          <div className="flex flex-col">
-            <span className="text-base font-semibold tracking-tight text-ink">Export</span>
-            <span className="text-sm text-ink-muted">Download your log as a CSV file.</span>
-          </div>
-          <ExportBar entries={entries} />
-        </div>
+        {/* Activity log — Export CSV button lives in the header. */}
+        <ActivityLogView entries={entries} exportBar={<ExportBar entries={entries} />} />
 
         {/* Google Sheets — label left, connect button right, no accordion. */}
         <CollapsibleSection

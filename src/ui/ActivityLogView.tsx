@@ -27,19 +27,17 @@ import { orderedForDisplay } from '../domain/activityLog';
 export interface ActivityLogViewProps {
   /** The current Activity_Log. Rendered most-recent-first; never mutated. */
   entries: LogEntry[];
-  /**
-   * Optional display-update error. When set (non-empty), an error indication is
-   * shown alongside the existing entries without dropping displayed data
-   * (Req 8.4, 8.5).
-   */
+  /** Optional error indication (Req 8.4, 8.5). */
   error?: string | null;
+  /** Optional export button rendered in the section header. */
+  exportBar?: React.ReactNode;
 }
 
 /**
  * Renders the Activity_Log as an accessible table, with empty-state and a
  * non-destructive error indication.
  */
-export function ActivityLogView({ entries, error }: ActivityLogViewProps) {
+export function ActivityLogView({ entries, error, exportBar }: ActivityLogViewProps) {
   const rows = orderedForDisplay(entries);
   const hasEntries = rows.length > 0;
 
@@ -48,7 +46,10 @@ export function ActivityLogView({ entries, error }: ActivityLogViewProps) {
       aria-label="Activity log"
       className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
     >
-      <h2 className="text-lg font-semibold tracking-tight text-ink">Activity log</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold tracking-tight text-ink">Activity log</h2>
+        {exportBar}
+      </div>
 
       {error && (
         <p
