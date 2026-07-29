@@ -257,6 +257,9 @@ const DEFAULT_SELECTION: Record<SoundKind, string> = {
   end: 'gentle-chime',
 };
 
+/** Seconds ahead of `AudioContext.currentTime` to schedule audio, avoiding glitches. */
+const AUDIO_LOOKAHEAD_SEC = 0.02;
+
 function catalog(kind: SoundKind): SoundDef[] {
   return kind === 'start' ? START_SOUNDS : END_SOUNDS;
 }
@@ -301,7 +304,7 @@ export function createSoundPlayer(): SoundPlayer {
       kind === 'start' ? START_OUTPUT_GAIN : END_OUTPUT_GAIN;
     const def = catalog(kind).find((s) => s.id === id) ?? catalog(kind)[0];
     try {
-      def.render(audio, audio.currentTime + 0.02);
+      def.render(audio, audio.currentTime + AUDIO_LOOKAHEAD_SEC);
     } catch {
       /* ignore synthesis errors */
     }

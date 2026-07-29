@@ -15,11 +15,20 @@
 
 import type { TimerEngine, TimerState } from '../types/timer';
 import { parseDuration } from './validation';
+import { SECONDS_PER_MINUTE } from './constants';
 
 /** Default_Duration: 15 minutes = 900 seconds (Req 2.2). */
-export const DEFAULT_DURATION_SEC = 15 * 60;
+export const DEFAULT_DURATION_SEC = 15 * SECONDS_PER_MINUTE;
 
-const SECONDS_PER_MINUTE = 60;
+const MS_PER_SECOND = 1000;
+
+/**
+ * Compute remaining seconds from a scheduled end instant and the current time.
+ * Shared by `tick` and `pause` to keep the formula in one place.
+ */
+function computeRemaining(endEpochMs: number, nowMs: number): number {
+  return Math.max(0, Math.ceil((endEpochMs - nowMs) / MS_PER_SECOND));
+}
 
 /**
  * A configured duration (in seconds) is valid iff it represents a whole number
@@ -136,8 +145,6 @@ function reset(state: TimerState): TimerState {
   };
 }
 
-const MS_PER_SECOND = 1000;
-
 /**
  * Begin a new Session from the idle (not-running) state (Req 3.1).
  *
@@ -197,10 +204,7 @@ function tick(state: TimerState, nowMs: number): TimerState {
     return state;
   }
 
-  const remainingSec = Math.max(
-    0,
-    Math.ceil((state.endEpochMs - nowMs) / MS_PER_SECOND),
-  );
+  const remainingSec = computeRemaining(state.endEpochMs, nowMs);
 
   if (remainingSec === 0) {
     return {
@@ -244,10 +248,7 @@ function pause(state: TimerState, nowMs: number): TimerState {
     };
   }
 
-  const capturedRemainingSec = Math.max(
-    0,
-    Math.ceil((state.endEpochMs - nowMs) / MS_PER_SECOND),
-  );
+  const capturedRemainingSec = computeRemaining(state.endEpochMs, nowMs);
 
   return {
     ...state,

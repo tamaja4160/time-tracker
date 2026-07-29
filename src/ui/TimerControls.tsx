@@ -39,6 +39,9 @@ export interface TimerControlsProps {
 /** How long a not-applicable indication remains visible before auto-dismiss. */
 const TRANSIENT_MESSAGE_MS = 4000;
 
+/** Height of the 3D button's bottom edge in pixels — shared across Tailwind strings. */
+const EDGE_HEIGHT_PX = 7;
+
 function notApplicableMessage(
   outcome: TimerTransitionOutcome | undefined,
 ): string | null {
@@ -92,13 +95,13 @@ export function TimerControls({
     'relative select-none rounded-2xl w-44 py-4 text-center text-lg font-semibold text-white bg-accent ' +
     'transition-[transform,box-shadow] duration-100 ease-out focus:outline-none ' +
     'focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2';
-  const pressedClasses = 'translate-y-[7px] shadow-none';
+  const pressedClasses = `translate-y-[${EDGE_HEIGHT_PX}px] shadow-none`;
   const extendedClasses =
-    'shadow-[0_7px_0_#0656b0] hover:bg-accent-hover active:translate-y-[7px] active:shadow-none';
+    `shadow-[0_${EDGE_HEIGHT_PX}px_0_#0656b0] hover:bg-accent-hover active:translate-y-[${EDGE_HEIGHT_PX}px] active:shadow-none`;
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex items-start justify-center pb-[7px]">
+      <div className={`flex items-start justify-center pb-[${EDGE_HEIGHT_PX}px]`}>
         <button
           type="button"
           onClick={primary.onClick}

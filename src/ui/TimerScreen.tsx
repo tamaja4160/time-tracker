@@ -26,7 +26,7 @@
 import type { Clock } from '../types/clock';
 import type { TimerState } from '../types/timer';
 import { systemClock } from '../infra/clock';
-import { useTimer, type TimerControls as TimerControlActions, type UseTimerResult } from './useTimer';
+import { useTimer, type TimerActions, type UseTimerResult } from './useTimer';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
 
@@ -63,7 +63,7 @@ function TimerScreenContent({
   controls,
 }: {
   state: TimerState;
-  controls: TimerControlActions;
+  controls: TimerActions;
 }) {
   return (
     <section

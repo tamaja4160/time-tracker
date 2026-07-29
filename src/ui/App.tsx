@@ -34,7 +34,6 @@ import { systemClock } from '../infra/clock';
 import { createLogStore } from '../infra/logStore';
 import {
   createAuthClient,
-  AuthStoreError,
   type BrowserAuthClient,
 } from '../infra/authClient';
 import { createGoogleAuth } from '../infra/googleAuth';
@@ -264,9 +263,7 @@ export function App({
     // Load the Google connection status (Req 11.3). A failure to read the
     // browser Auth_Store is surfaced but never touches the Activity_Log (11.8).
     void authClient.getStatus().catch((err: unknown) => {
-      if (err instanceof AuthStoreError) {
-        pushError(err.message);
-      } else if (err instanceof Error) {
+      if (err instanceof Error) {
         pushError(err.message);
       }
     });
@@ -394,7 +391,6 @@ export function App({
         onPreviewSound={handlePreviewSound}
         notifPermission={notifPermission}
         onEnableNotifications={enableNotifications}
-        player={sound}
       />
 
       {/* Shared transient/persistent error region (Req 13.5). */}

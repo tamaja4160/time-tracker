@@ -2,33 +2,18 @@
  * Clock adapter (infrastructure layer).
  *
  * The pure domain layer never calls `Date.now()` directly; wall-clock time is
- * injected via the `Clock` interface so it can be faked in tests. See design
- * "Layering" and "Infrastructure layer".
+ * injected via the `Clock` interface so it can be faked in tests.
  *
  * _Requirements: 1.3, 1.4_
  */
 import type { Clock } from '../types';
 
-/**
- * Real clock backed by the system wall-clock via `Date.now()`.
- */
+/** Real clock backed by the system wall-clock via `Date.now()`. */
 export const systemClock: Clock = {
   now(): number {
     return Date.now();
   },
 };
-
-/**
- * Create a real clock instance wrapping `Date.now()`. Provided as a factory in
- * addition to the `systemClock` singleton for symmetry with `createFakeClock`.
- */
-export function createSystemClock(): Clock {
-  return {
-    now(): number {
-      return Date.now();
-    },
-  };
-}
 
 /**
  * An in-memory `Clock` whose value is fully controllable, for deterministic

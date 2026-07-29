@@ -167,8 +167,7 @@ export function GoogleSheetsPanel({
     void (async () => {
       await refreshStatus();
       // If already connected from a previous session, populate the picker.
-      const status = await authClient.getStatus().catch(() => null);
-      if (status?.connected && !authClient.needsReauth()) {
+      if (connection.connected && !authClient.needsReauth()) {
         void loadSheets();
       }
     })();

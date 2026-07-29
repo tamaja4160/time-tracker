@@ -15,6 +15,7 @@
  */
 import type { LogEntry, LogStore, Result } from '../types';
 import type { StorageLike } from './fakeStorage';
+import { describeError } from './utils';
 
 /** localStorage key under which the activity log envelope is stored. */
 export const LOG_STORE_KEY = 'timeTracker.activityLog';
@@ -128,7 +129,3 @@ export function createLogStore(storage?: StorageLike): LogStore {
   };
 }
 
-function describeError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err);
-}

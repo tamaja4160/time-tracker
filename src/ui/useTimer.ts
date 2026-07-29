@@ -27,7 +27,7 @@ import { timerReducer } from './timerReducer';
 export const TICK_INTERVAL_MS = 250;
 
 /** Actions the timer view can trigger; all decisions delegate to the engine. */
-export interface TimerControls {
+export interface TimerActions {
   setDuration(minutes: unknown): void;
   start(): void;
   pause(): void;
@@ -37,7 +37,7 @@ export interface TimerControls {
 
 export interface UseTimerResult {
   state: TimerState;
-  controls: TimerControls;
+  controls: TimerActions;
 }
 
 /**
@@ -75,10 +75,6 @@ export function useTimer(
   );
   const reset = useCallback(() => dispatch({ type: 'reset' }), []);
 
-  // Run the countdown tick only while a session is running. The effect
-  // re-subscribes when the running status changes and always clears its
-  // interval on cleanup (status change or unmount), so no stale interval runs
-  // while idle/paused/completed.
   const isRunning = state.status === 'running';
   useEffect(() => {
     if (!isRunning) {

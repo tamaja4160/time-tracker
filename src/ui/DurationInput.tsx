@@ -19,8 +19,7 @@
  */
 import { useEffect, useId, useState } from 'react';
 import { parseDuration } from '../domain/validation';
-
-const SECONDS_PER_MINUTE = 60;
+import { SECONDS_PER_MINUTE } from '../domain/constants';
 
 export interface DurationInputProps {
   /**

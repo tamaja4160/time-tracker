@@ -15,8 +15,7 @@
  *
  * _Requirements: 1.3, 1.4_
  */
-
-const SECONDS_PER_MINUTE = 60;
+import { SECONDS_PER_MINUTE } from './constants';
 
 /**
  * Format a non-negative remaining-seconds value as `MM:SS`.

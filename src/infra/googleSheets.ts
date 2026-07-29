@@ -58,6 +58,7 @@ import {
   validateHeaderColumns,
 } from '../domain/sheetsMapping';
 import type { CachedToken } from './googleAuth';
+import { describeError } from './utils';
 
 /* -------------------------------------------------------------------------- */
 /* Error type                                                                  */
@@ -171,7 +172,9 @@ const DRIVE_FILES_API = 'https://www.googleapis.com/drive/v3/files';
 /** MIME type identifying Google Sheets files in Drive. */
 const SPREADSHEET_MIME = 'application/vnd.google-apps.spreadsheet';
 
-/** Default escalation policy (Req 13.5). */
+/** Range covering the first row across up to 702 columns (ZZ) for header validation. */
+const HEADER_READ_RANGE = 'A1:ZZ1';
+
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_RETRY_DELAY_MS = 2000;
 
@@ -294,7 +297,7 @@ export function createGoogleSheetsConnector(
 
   /** Read the first sheet's first row (header) for column validation. */
   async function fetchHeaderRow(spreadsheetId: string): Promise<string[]> {
-    const url = `${SHEETS_API_BASE}/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent('A1:ZZ1')}`;
+    const url = `${SHEETS_API_BASE}/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(HEADER_READ_RANGE)}`;
     const range = await apiRequest<ValueRange>(
       url,
       { method: 'GET' },
@@ -602,8 +605,3 @@ export function createGoogleSheetsConnector(
   };
 }
 
-function describeError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (err === undefined || err === null) return '';
-  return String(err);
-}

@@ -43,6 +43,7 @@
  */
 import type { AuthClient } from '../types/google';
 import type { StorageLike } from './fakeStorage';
+import { resolveStorage } from './utils';
 import { GoogleAuthError, type GoogleAuth } from './googleAuth';
 
 /* -------------------------------------------------------------------------- */
@@ -136,20 +137,6 @@ export interface AuthClientOptions {
 /* Implementation                                                              */
 /* -------------------------------------------------------------------------- */
 
-function resolveStorage(
-  option: StorageLike | null | undefined,
-): StorageLike | null {
-  if (option === null) return null; // persistence explicitly disabled
-  if (option) return option;
-  if (typeof window !== 'undefined') {
-    try {
-      return window.localStorage;
-    } catch {
-      return null; // localStorage can throw in some sandboxed contexts
-    }
-  }
-  return null;
-}
 
 function isAuthMeta(value: unknown): value is AuthMeta {
   if (typeof value !== 'object' || value === null) return false;

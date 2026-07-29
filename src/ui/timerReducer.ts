@@ -1,16 +1,10 @@
 /**
  * Timer reducer (UI layer).
  *
- * A thin reducer that drives `TimerState` purely through the `TimerEngine`
- * actions. The reducer itself makes NO timer decisions: every action delegates
- * to the corresponding pure engine function, with wall-clock time (`nowMs`)
- * injected by the dispatcher (see `useTimer`) from a `Clock`. This keeps the
- * React layer thin and keeps all countdown/transition logic in the tested pure
- * domain core.
- *
- * Used by `TimerScreen` (task 13.1).
- *
- * _Requirements: 1.1, 1.4, 3.3_
+ * A thin reducer that drives `TimerState` purely through `TimerEngine` actions.
+ * All countdown/transition decisions live in the domain engine; this file only
+ * routes dispatched actions to the corresponding engine function and injects
+ * wall-clock time (`nowMs`) from the caller's `Clock`.
  */
 import type { TimerState } from '../types/timer';
 import { timerEngine } from '../domain/timerEngine';
@@ -46,8 +40,6 @@ export function timerReducer(state: TimerState, action: TimerAction): TimerState
     case 'tick':
       return timerEngine.tick(state, action.nowMs);
     default:
-      // Exhaustiveness guard: if a new action type is added the compiler will
-      // flag this branch as a type error.
       return assertNever(action);
   }
 }

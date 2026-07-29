@@ -36,6 +36,7 @@
  * _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
  */
 import type { StorageLike } from './fakeStorage';
+import { describeError, resolveStorage } from './utils';
 
 /* -------------------------------------------------------------------------- */
 /* Minimal Google Identity Services (GIS) typings                              */
@@ -114,6 +115,9 @@ export const GOOGLE_AUTH_SCOPES = [
 
 /** Default time to wait for a consent/authorization response (Req 11.6). */
 export const DEFAULT_AUTH_TIMEOUT_MS = 120_000;
+
+/** Fallback token lifetime in seconds when GIS omits `expires_in`. */
+const DEFAULT_TOKEN_LIFETIME_SEC = 3600;
 
 /** localStorage key for the best-effort same-session/restart token mirror. */
 export const GOOGLE_AUTH_STORAGE_KEY = 'timeTracker.googleAuthToken';
@@ -258,21 +262,6 @@ function causeFromGisError(error: GisErrorResponse): GoogleAuthErrorCause {
   }
 }
 
-function resolveStorage(
-  option: StorageLike | null | undefined,
-): StorageLike | null {
-  if (option === null) return null; // persistence explicitly disabled
-  if (option) return option;
-  if (typeof window !== 'undefined') {
-    try {
-      return window.localStorage;
-    } catch {
-      return null; // localStorage can throw in some sandboxed contexts
-    }
-  }
-  return null;
-}
-
 function isCachedToken(value: unknown): value is CachedToken {
   if (typeof value !== 'object' || value === null) return false;
   const t = value as Record<string, unknown>;
@@ -369,7 +358,7 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
     const expiresInSec =
       typeof response.expires_in === 'number' && response.expires_in > 0
         ? response.expires_in
-        : 3600;
+        : DEFAULT_TOKEN_LIFETIME_SEC;
     const token: CachedToken = {
       accessToken: response.access_token,
       expiresAtMs: now() + expiresInSec * 1000,
@@ -462,7 +451,3 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
   };
 }
 
-function describeError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err);
-}

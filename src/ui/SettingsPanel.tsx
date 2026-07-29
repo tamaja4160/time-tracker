@@ -8,7 +8,7 @@
  * - Desktop notifications enable/status
  */
 import { useRef, useEffect } from 'react';
-import { START_SOUNDS, END_SOUNDS, type SoundKind, type SoundPlayer } from '../infra/sound';
+import { START_SOUNDS, END_SOUNDS, type SoundKind } from '../infra/sound';
 import type { NotificationPermissionState } from '../infra/notifications';
 
 export interface SettingsPanelProps {
@@ -25,8 +25,6 @@ export interface SettingsPanelProps {
 
   notifPermission: NotificationPermissionState;
   onEnableNotifications: () => void;
-
-  player: SoundPlayer;
 }
 
 export function SettingsPanel({
