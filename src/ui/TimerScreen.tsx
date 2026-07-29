@@ -81,11 +81,10 @@ function TimerScreenContent({
         usingDefaultFallback={state.usingDefaultFallback}
       />
 
-      {/* Start / Pause / Resume / Reset wired to the engine actions (Req 3-5). */}
+      {/* Start / Pause / Resume (one 3D button) + immediate Reset (Req 3-5). */}
       <TimerControls
         status={state.status}
         lastTransition={state.lastTransition}
-        configuredDurationSec={state.configuredDurationSec}
         onStart={controls.start}
         onPause={controls.pause}
         onResume={controls.resume}

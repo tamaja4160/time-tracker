@@ -316,6 +316,112 @@ export function createGoogleSheetsConnector(
     return resource.properties?.title ?? '';
   }
 
+  /**
+   * Apply the visual template to a freshly created sheet: a styled, frozen
+   * header band, alternating row banding, sensible column widths, and a basic
+   * filter (the column dropdown arrows). Best-effort — a created sheet with a
+   * header is already usable, so formatting failures are swallowed.
+   */
+  async function applyTemplate(
+    spreadsheetId: string,
+    sheetId: number,
+  ): Promise<void> {
+    const headerColor = { red: 0.851, green: 0.886, blue: 0.949 }; // light blue-gray
+    const black = { red: 0, green: 0, blue: 0 };
+    const white = { red: 1, green: 1, blue: 1 };
+    const bandAlt = { red: 0.961, green: 0.969, blue: 0.98 }; // light gray
+    const lastColumn = REQUIRED_COLUMNS.length; // exclusive end index
+
+    const requests = [
+      // Freeze the header row so it stays visible while scrolling.
+      {
+        updateSheetProperties: {
+          properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
+          fields: 'gridProperties.frozenRowCount',
+        },
+      },
+      // Alternating row banding with a colored header band.
+      {
+        addBanding: {
+          bandedRange: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              startColumnIndex: 0,
+              endColumnIndex: lastColumn,
+            },
+            rowProperties: {
+              headerColor,
+              firstBandColor: white,
+              secondBandColor: bandAlt,
+            },
+          },
+        },
+      },
+      // Bold, black header text, vertically centered.
+      {
+        repeatCell: {
+          range: {
+            sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: lastColumn,
+          },
+          cell: {
+            userEnteredFormat: {
+              verticalAlignment: 'MIDDLE',
+              textFormat: { foregroundColor: black, bold: true, fontSize: 11 },
+            },
+          },
+          fields:
+            'userEnteredFormat(textFormat,verticalAlignment)',
+        },
+      },
+      // Column widths: compact date/time columns, wide description.
+      {
+        updateDimensionProperties: {
+          range: { sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 3 },
+          properties: { pixelSize: 120 },
+          fields: 'pixelSize',
+        },
+      },
+      {
+        updateDimensionProperties: {
+          range: {
+            sheetId,
+            dimension: 'COLUMNS',
+            startIndex: 3,
+            endIndex: lastColumn,
+          },
+          properties: { pixelSize: 360 },
+          fields: 'pixelSize',
+        },
+      },
+      // Basic filter across the header columns (the dropdown arrows).
+      {
+        setBasicFilter: {
+          filter: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              startColumnIndex: 0,
+              endColumnIndex: lastColumn,
+            },
+          },
+        },
+      },
+    ];
+
+    const url = `${SHEETS_API_BASE}/${encodeURIComponent(spreadsheetId)}:batchUpdate`;
+    await apiRequest<unknown>(
+      url,
+      { method: 'POST', body: JSON.stringify({ requests }) },
+      'request_failed',
+      'Could not format the new sheet.',
+    );
+  }
+
   /** Single append attempt (Req 13.1); throws `write_failed` on any failure. */
   async function appendOnce(
     target: TargetSheet,
@@ -324,7 +430,10 @@ export function createGoogleSheetsConnector(
     const range = 'A1'; // unprefixed → first sheet; append finds the table near A1
     const url =
       `${SHEETS_API_BASE}/${encodeURIComponent(target.spreadsheetId)}/values/${encodeURIComponent(range)}:append` +
-      `?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+      // OVERWRITE (not INSERT_ROWS) writes into the empty cells after the table.
+      // INSERT_ROWS fails when a basic filter is present ("can't insert cells
+      // in a filtered range"), which broke appends on templated sheets.
+      `?valueInputOption=RAW&insertDataOption=OVERWRITE`;
     await apiRequest<unknown>(
       url,
       { method: 'POST', body: JSON.stringify({ values: [toSheetRow(entry)] }) },
@@ -403,6 +512,16 @@ export function createGoogleSheetsConnector(
         'request_failed',
         'Could not write the header row to the new sheet.',
       );
+
+      // 3) Apply the visual template (styled/frozen header, banding, widths,
+      //    basic filter). Best-effort: the sheet is already usable, so any
+      //    formatting failure is swallowed rather than failing creation.
+      const sheetId = created.sheets?.[0]?.properties?.sheetId ?? 0;
+      try {
+        await applyTemplate(spreadsheetId, sheetId);
+      } catch {
+        // Non-fatal: the created sheet still has the correct header row.
+      }
 
       return {
         spreadsheetId,

@@ -106,18 +106,19 @@ const READY_TARGET: TargetSheet = {
 describe('createSheet (Req 12.2)', () => {
   test('creates a spreadsheet then writes REQUIRED_COLUMNS as the header row in order', async () => {
     const fetchFn = vi.fn(
-      (_url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      (url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
         const method = (init?.method ?? 'GET').toUpperCase();
-        if (method === 'POST') {
+        if (method === 'POST' && !String(url).includes(':batchUpdate')) {
           // The spreadsheets.create call.
           return Promise.resolve(
             jsonResponse({
               spreadsheetId: 'new-sheet-id',
               properties: { title: 'My Log' },
+              sheets: [{ properties: { sheetId: 0, title: 'Sheet1' } }],
             }),
           );
         }
-        // The header PUT.
+        // The header PUT and the template batchUpdate POST.
         return Promise.resolve(jsonResponse({}));
       },
     );
@@ -129,8 +130,8 @@ describe('createSheet (Req 12.2)', () => {
 
     const target = await connector.createSheet('My Log');
 
-    // Two REST calls: create (POST) then header write (PUT).
-    expect(fetchFn).toHaveBeenCalledTimes(2);
+    // Three REST calls: create (POST), header write (PUT), template batchUpdate (POST).
+    expect(fetchFn).toHaveBeenCalledTimes(3);
 
     const [createUrl, createInit] = fetchFn.mock.calls[0];
     expect(String(createUrl)).toBe(
@@ -164,6 +165,20 @@ describe('createSheet (Req 12.2)', () => {
       sheetTitle: 'My Log',
       hasRequiredColumns: true,
     });
+
+    // The third call applies the template (styled header, banding, filter)
+    // via a batchUpdate against the new spreadsheet.
+    const [templateUrl, templateInit] = fetchFn.mock.calls[2];
+    expect(String(templateUrl)).toContain('/new-sheet-id:batchUpdate');
+    expect((templateInit?.method ?? '').toUpperCase()).toBe('POST');
+    const templateBody = JSON.parse(templateInit?.body as string);
+    expect(Array.isArray(templateBody.requests)).toBe(true);
+    // Includes a basic filter request (the column dropdown arrows).
+    expect(
+      templateBody.requests.some(
+        (r: Record<string, unknown>) => 'setBasicFilter' in r,
+      ),
+    ).toBe(true);
   });
 });
 

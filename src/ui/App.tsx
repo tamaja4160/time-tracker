@@ -27,6 +27,7 @@
  * _Requirements: 1.1, 7.4, 7.5, 8.3, 9.1, 9.2, 11.3_
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { SettingsPanel } from './SettingsPanel';
 import type { Clock } from '../types/clock';
 import type { LogEntry, LogStore } from '../types';
 import { systemClock } from '../infra/clock';
@@ -43,6 +44,9 @@ import {
   type BrowserSheetsConnector,
 } from '../infra/googleSheets';
 import { activityLogService, createLogEntry } from '../domain/activityLog';
+import { formatRemaining } from '../domain/timeFormat';
+import { createBrowserNotifier, type Notifier, type NotificationPermissionState } from '../infra/notifications';
+import { createSoundPlayer, type SoundPlayer } from '../infra/sound';
 import { useTimer } from './useTimer';
 import { TimerScreen } from './TimerScreen';
 import { ActivityPrompt } from './ActivityPrompt';
@@ -60,6 +64,10 @@ export interface AppProps {
   authClient?: BrowserAuthClient;
   /** Injectable Sheets connector (defaults to the Option A REST connector). */
   sheetsConnector?: BrowserSheetsConnector;
+  /** Injectable notifier (defaults to the browser Notifications wrapper). */
+  notifier?: Notifier;
+  /** Injectable sound player (defaults to the Web Audio synth player). */
+  sound?: SoundPlayer;
 }
 
 /** A `fetch` that always rejects, used only when no global `fetch` exists. */
@@ -71,6 +79,8 @@ export function App({
   logStore: logStoreProp,
   authClient: authClientProp,
   sheetsConnector: sheetsConnectorProp,
+  notifier: notifierProp,
+  sound: soundProp,
 }: AppProps = {}) {
   // --- Infrastructure instances (stable across renders) ---------------------
   const logStore = useMemo<LogStore>(
@@ -104,6 +114,115 @@ export function App({
   // --- Timer state (lifted so prompt + log share the same session) ----------
   const timer = useTimer(clock);
   const { state, controls } = timer;
+
+  // --- Notifications: OS notification on completion + tab-title countdown ----
+  const notifier = useMemo<Notifier>(
+    () => notifierProp ?? createBrowserNotifier(),
+    [notifierProp],
+  );
+
+  // Track notification permission so the UI can show status and offer to enable.
+  const [notifPermission, setNotifPermission] =
+    useState<NotificationPermissionState>('default');
+  useEffect(() => {
+    setNotifPermission(notifier.permission());
+  }, [notifier]);
+
+  const enableNotifications = useCallback(() => {
+    void notifier.requestPermission().then(setNotifPermission);
+  }, [notifier]);
+
+  // --- Sound: per-second ticking while running + chime on completion --------
+  const sound = useMemo<SoundPlayer>(
+    () => soundProp ?? createSoundPlayer(),
+    [soundProp],
+  );
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Mirror of the persisted sound selections so the settings panel re-renders.
+  const [selStart, setSelStart] = useState(() => sound.getSelection('start'));
+  const [selEnd, setSelEnd] = useState(() => sound.getSelection('end'));
+
+  const handleSelectSound = useCallback(
+    (kind: Parameters<typeof sound.setSelection>[0], id: string) => {
+      sound.setSelection(kind, id);
+      if (kind === 'start') setSelStart(id);
+      else setSelEnd(id);
+    },
+    [sound],
+  );
+
+  const handlePreviewSound = useCallback(
+    (kind: Parameters<typeof sound.preview>[0], id: string) => {
+      sound.unlock();
+      sound.preview(kind, id);
+    },
+    [sound],
+  );
+
+  // Release the audio context when App unmounts.
+  useEffect(() => () => sound.dispose(), [sound]);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((on) => {
+      const next = !on;
+      // Unlock audio on this gesture so the next start/alarm is audible.
+      if (next) sound.unlock();
+      return next;
+    });
+  }, [sound]);
+
+  // Reflect the remaining time in the browser tab title so a backgrounded tab
+  // still shows the countdown; announce completion there too.
+  useEffect(() => {
+    const base = 'Time Tracker';
+    if (state.status === 'running') {
+      document.title = `${formatRemaining(state.remainingSec)} · ${base}`;
+    } else if (state.status === 'paused') {
+      document.title = `${formatRemaining(state.remainingSec)} (paused) · ${base}`;
+    } else if (state.status === 'completed') {
+      document.title = `⏰ Time's up! · ${base}`;
+    } else {
+      document.title = base;
+    }
+  }, [state.status, state.remainingSec]);
+
+  // Fire a single OS notification when a session transitions to completed.
+  const prevStatusRef = useRef(state.status);
+  useEffect(() => {
+    if (prevStatusRef.current !== 'completed' && state.status === 'completed') {
+      if (soundEnabled) sound.playAlarm();
+      notifier.notify("Time's up!", {
+        body: 'Click here to log what you did — the next session starts after.',
+        tag: 'time-tracker-session-complete',
+        requireInteraction: true,
+      });
+    }
+    prevStatusRef.current = state.status;
+  }, [state.status, notifier, sound, soundEnabled]);
+
+  // Wrap Start so the notification permission is requested and audio is
+  // unlocked on the user gesture (both require a gesture).
+  const handleStart = useCallback(() => {
+    void notifier.requestPermission().then(setNotifPermission);
+    sound.unlock();
+    if (soundEnabled) sound.playStart();
+    controls.start();
+  }, [notifier, sound, soundEnabled, controls]);
+
+  // The primary button plays its click sound on every press (Pause/Resume too).
+  const handlePause = useCallback(() => {
+    sound.unlock();
+    if (soundEnabled) sound.playStart();
+    controls.pause();
+  }, [sound, soundEnabled, controls]);
+
+  const handleResume = useCallback(() => {
+    sound.unlock();
+    if (soundEnabled) sound.playStart();
+    controls.resume();
+  }, [sound, soundEnabled, controls]);
 
   // --- Activity log + error state -------------------------------------------
   const [entries, setEntries] = useState<LogEntry[]>([]);
@@ -232,10 +351,47 @@ export function App({
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-10 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center gap-2 px-6 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
           <h1 className="text-lg font-semibold tracking-tight">Time Tracker</h1>
+          <button
+            type="button"
+            aria-label="Open settings"
+            onClick={() => setSettingsOpen(true)}
+            className="rounded-full p-2 text-ink-muted transition-colors hover:bg-ink/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+              <path
+                d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M16.42 12.58a1.5 1.5 0 0 0 .3 1.65l.05.05a1.82 1.82 0 0 1-2.57 2.57l-.05-.05a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.91 1.37V18a1.82 1.82 0 0 1-3.64 0v-.08a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.65.3l-.05.05a1.82 1.82 0 0 1-2.57-2.57l.05-.05a1.5 1.5 0 0 0 .3-1.65 1.5 1.5 0 0 0-1.37-.91H2a1.82 1.82 0 0 1 0-3.64h.08a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.65l-.05-.05a1.82 1.82 0 0 1 2.57-2.57l.05.05a1.5 1.5 0 0 0 1.65.3h.07A1.5 1.5 0 0 0 8.31 2V2a1.82 1.82 0 0 1 3.64 0v.08a1.5 1.5 0 0 0 .91 1.37 1.5 1.5 0 0 0 1.65-.3l.05-.05a1.82 1.82 0 0 1 2.57 2.57l-.05.05a1.5 1.5 0 0 0-.3 1.65v.07A1.5 1.5 0 0 0 18 8.31H18a1.82 1.82 0 0 1 0 3.64h-.08a1.5 1.5 0 0 0-1.5.63Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </header>
+
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        selStart={selStart}
+        selEnd={selEnd}
+        onSelectSound={handleSelectSound}
+        onPreviewSound={handlePreviewSound}
+        notifPermission={notifPermission}
+        onEnableNotifications={enableNotifications}
+        player={sound}
+      />
 
       {/* Shared transient/persistent error region (Req 13.5). */}
       <div className="mx-auto max-w-3xl">
@@ -256,7 +412,18 @@ export function App({
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
         {/* Primary content: the timer (Req 1.1), sharing the lifted state. */}
-        <TimerScreen clock={clock} timer={timer} />
+        <TimerScreen
+          clock={clock}
+          timer={{
+            state,
+            controls: {
+              ...controls,
+              start: handleStart,
+              pause: handlePause,
+              resume: handleResume,
+            },
+          }}
+        />
 
         {/* Activity log (most-recent-first, live updates on append). */}
         <ActivityLogView entries={entries} />

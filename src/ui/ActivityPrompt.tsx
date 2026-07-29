@@ -109,7 +109,6 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
             type="text"
             value={text}
             maxLength={100}
-            placeholder="e.g. wrote design"
             aria-invalid={message != null}
             aria-describedby={message != null ? errorId : undefined}
             onChange={(event) => {

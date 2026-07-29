@@ -168,9 +168,8 @@ describe('App component/DOM behaviour (fake timers)', () => {
     advance(3000);
     expect(screen.getByRole('timer')).toHaveTextContent('14:57');
 
-    // Reset is gated by a full-duration confirmation affordance (Req 5.5).
+    // Reset is now immediate (no confirmation step).
     fireEvent.click(screen.getByRole('button', { name: /^reset$/i }));
-    fireEvent.click(screen.getByRole('button', { name: /confirm reset/i }));
 
     // Back to the full configured duration, not running (Start is offered again).
     expect(screen.getByRole('timer')).toHaveTextContent('15:00');
