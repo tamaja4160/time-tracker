@@ -77,27 +77,22 @@ export function ExportBar({ entries, download = defaultDownload }: ExportBarProp
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink-muted">Download your full log as a CSV file.</p>
-        <button
-          type="button"
-          onClick={handleExport}
-          className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-2.5 text-base font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
-        >
-          Export CSV
-        </button>
-      </div>
-
+    <div className="flex flex-col items-end gap-1.5">
+      <button
+        type="button"
+        onClick={handleExport}
+        className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+      >
+        Export CSV
+      </button>
       {status.kind === 'success' && (
-        <p role="status" aria-live="polite" className="text-sm text-emerald-700">
-          Export succeeded. Your CSV file has been downloaded.
+        <p role="status" aria-live="polite" className="text-xs text-emerald-700">
+          Downloaded.
         </p>
       )}
-
       {status.kind === 'error' && (
-        <p role="alert" className="text-sm text-red-600">
-          Export failed. Your activity log was not changed — please try again.
+        <p role="alert" className="text-xs text-red-600">
+          Export failed — please try again.
         </p>
       )}
     </div>
