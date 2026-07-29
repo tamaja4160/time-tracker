@@ -34,7 +34,7 @@ describe('Property 2: idle remaining equals configured duration', () => {
         expect(state.configuredDurationSec).toBe(durationSec);
         expect(state.remainingSec).toBe(durationSec);
         // A valid duration must not trigger the default fallback.
-        expect(state.usingDefaultFallback).toBe(false);
+        expect(state.isUsingDefaultDuration).toBe(false);
       }),
       { numRuns: 100 },
     );

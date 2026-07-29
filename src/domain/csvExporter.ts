@@ -22,9 +22,9 @@
  *
  * - `startEpochMs` is derived from `date` + `startTime` interpreted in the
  *   local time zone (the zone the design uses to format those fields). See
- *   {@link deriveStartEpochMs}.
+ *   {@link parseStartEpochMs}.
  * - `id` is derived deterministically from the four CSV-represented fields.
- *   See {@link deriveId}.
+ *   See {@link computeEntryId}.
  *
  * Both derivation helpers are exported so callers (and the round-trip
  * property test) can construct the matching expected `startEpochMs`/`id`
@@ -73,7 +73,7 @@ function serializeRecord(fields: readonly string[]): string {
  * formats `date` (YYYY-MM-DD) and `startTime` (HH:MM:SS) from the start
  * instant. Returns `NaN` if the inputs are not well-formed.
  */
-export function deriveStartEpochMs(date: string, startTime: string): number {
+export function parseStartEpochMs(date: string, startTime: string): number {
   const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
   const timeMatch = /^(\d{2}):(\d{2}):(\d{2})$/.exec(startTime);
   if (!dateMatch || !timeMatch) return Number.NaN;
@@ -96,7 +96,7 @@ export function deriveStartEpochMs(date: string, startTime: string): number {
  * id stable across a round-trip and distinct for entries that differ in any
  * CSV-carried field. Implemented as a djb2 hash rendered as hex.
  */
-export function deriveId(
+export function computeEntryId(
   date: string,
   startTime: string,
   endTime: string,
@@ -198,12 +198,12 @@ export const csvExporter: CsvExporter = {
       const endTime = fields[2] ?? '';
       const description = fields[3] ?? '';
       return {
-        id: deriveId(date, startTime, endTime, description),
+        id: computeEntryId(date, startTime, endTime, description),
         date,
         startTime,
         endTime,
         description,
-        startEpochMs: deriveStartEpochMs(date, startTime),
+        startEpochMs: parseStartEpochMs(date, startTime),
       };
     });
   },

@@ -98,17 +98,17 @@ export function GoogleSheetsPanel({
     expiresAtMs: null,
   });
   const [needsReauth, setNeedsReauth] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [isBusy, setBusy] = useState(false);
 
   const [target, setTarget] = useState<TargetSheet | null>(null);
   /** Whether the current target has been validated as having all columns. */
-  const [targetValid, setTargetValid] = useState(false);
+  const [isTargetValid, setTargetValid] = useState(false);
 
   const [newSheetName, setNewSheetName] = useState(DEFAULT_SHEET_NAME);
   const [existingSheetId, setExistingSheetId] = useState('');
   /** The user's existing spreadsheets, for the picker dropdown. */
   const [sheets, setSheets] = useState<SpreadsheetSummary[]>([]);
-  const [loadingSheets, setLoadingSheets] = useState(false);
+  const [isLoadingSheets, setLoadingSheets] = useState(false);
 
   const [connectError, setConnectError] = useState<string | null>(null);
   const [sheetError, setSheetError] = useState<string | null>(null);
@@ -312,7 +312,7 @@ export function GoogleSheetsPanel({
             <button
               type="button"
               onClick={() => void handleConnect()}
-              disabled={busy}
+              disabled={isBusy}
               className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
@@ -321,7 +321,7 @@ export function GoogleSheetsPanel({
             <button
               type="button"
               onClick={() => void handleSignOut()}
-              disabled={busy}
+              disabled={isBusy}
               className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Sign out
@@ -364,7 +364,7 @@ export function GoogleSheetsPanel({
               id={nameFieldId}
               type="text"
               value={newSheetName}
-              disabled={busy}
+              disabled={isBusy}
               aria-invalid={nameError !== null}
               aria-describedby={nameError ? nameErrorId : undefined}
               onChange={(event) => setNewSheetName(event.target.value)}
@@ -378,7 +378,7 @@ export function GoogleSheetsPanel({
             <button
               type="button"
               onClick={() => void handleCreateSheet()}
-              disabled={busy || !nameValidation.ok}
+              disabled={isBusy || !nameValidation.ok}
               className="self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Create sheet
@@ -418,10 +418,10 @@ export function GoogleSheetsPanel({
               <button
                 type="button"
                 onClick={() => void loadSheets()}
-                disabled={busy || loadingSheets}
+                disabled={isBusy || isLoadingSheets}
                 className="text-xs font-medium text-sky-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loadingSheets ? 'Loading…' : 'Refresh list'}
+                {isLoadingSheets ? 'Loading…' : 'Refresh list'}
               </button>
             </div>
 
@@ -429,7 +429,7 @@ export function GoogleSheetsPanel({
               <select
                 id={sheetIdFieldId}
                 value={existingSheetId}
-                disabled={busy}
+                disabled={isBusy}
                 onChange={(event) => {
                   const id = event.target.value;
                   setExistingSheetId(id);
@@ -446,7 +446,7 @@ export function GoogleSheetsPanel({
               </select>
             ) : (
               <p className="text-sm text-slate-500">
-                {loadingSheets
+                {isLoadingSheets
                   ? 'Loading your spreadsheets…'
                   : 'No spreadsheets found yet. Use "Refresh list", or paste a sheet id below.'}
               </p>
@@ -459,14 +459,14 @@ export function GoogleSheetsPanel({
                 aria-label="Sheet id"
                 placeholder="…or paste a sheet id"
                 value={existingSheetId}
-                disabled={busy}
+                disabled={isBusy}
                 onChange={(event) => setExistingSheetId(event.target.value)}
                 className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
               />
               <button
                 type="button"
                 onClick={() => void handleSelectSheet()}
-                disabled={busy}
+                disabled={isBusy}
                 className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Select
@@ -504,7 +504,7 @@ export function GoogleSheetsPanel({
               {target.sheetTitle || target.spreadsheetId}
             </span>
           </p>
-          {targetValid && (
+          {isTargetValid && (
             <p role="status" className="text-sm font-medium text-emerald-700">
               ✓ This sheet has all required columns and is ready for entries.
             </p>

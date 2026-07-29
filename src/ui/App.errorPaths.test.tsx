@@ -19,7 +19,7 @@ import { TimerDisplay } from './TimerDisplay';
 import { ActivityLogView } from './ActivityLogView';
 import { timerEngine, DEFAULT_DURATION_SEC } from '../domain/timerEngine';
 import { createFakeClock } from '../infra/clock';
-import { createFakeStorage } from '../infra/fakeStorage';
+import { createFakeStorage } from '../test/fakeStorage';
 import { createLogStore } from '../infra/logStore';
 import { AuthStoreError, type BrowserAuthClient } from '../infra/authClient';
 import type { BrowserSheetsConnector } from '../infra/googleSheets';
@@ -99,13 +99,13 @@ describe('Default-duration fallback indication (Req 1.5, 2.5)', () => {
   test('falls back to 15:00 with a visible indication for an invalid configured duration', () => {
     // Drive the fallback through the pure engine init path.
     const state = timerEngine.init(Number.NaN);
-    expect(state.usingDefaultFallback).toBe(true);
+    expect(state.isUsingDefaultDuration).toBe(true);
     expect(state.remainingSec).toBe(DEFAULT_DURATION_SEC);
 
     render(
       <TimerDisplay
         remainingSec={state.remainingSec}
-        usingDefaultFallback={state.usingDefaultFallback}
+        usingDefaultFallback={state.isUsingDefaultDuration}
       />,
     );
 

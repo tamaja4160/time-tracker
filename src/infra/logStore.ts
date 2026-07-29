@@ -14,7 +14,7 @@
  * - 9.5: a write error yields a save-failure result.
  */
 import type { LogEntry, LogStore, Result } from '../types';
-import type { StorageLike } from './fakeStorage';
+import type { StorageLike } from './storageLike';
 import { describeError } from './utils';
 
 /** localStorage key under which the activity log envelope is stored. */

@@ -58,7 +58,7 @@ function makeIdleState(
     pausedRemainingSec: null,
     sessionStartEpochMs: null,
     sessionEndEpochMs: null,
-    usingDefaultFallback,
+    isUsingDefaultDuration: usingDefaultFallback,
   };
 }
 
@@ -104,7 +104,7 @@ function setDuration(state: TimerState, minutes: unknown): TimerState {
       // Only adjust remaining while idle/not running; running/paused timers are
       // left untouched (duration changes apply when idle, Req 2.1).
       remainingSec: isIdle ? newConfiguredSec : state.remainingSec,
-      usingDefaultFallback: false,
+      isUsingDefaultDuration: false,
     };
   }
 
@@ -119,7 +119,7 @@ function setDuration(state: TimerState, minutes: unknown): TimerState {
     ...state,
     configuredDurationSec: DEFAULT_DURATION_SEC,
     remainingSec: isIdle ? DEFAULT_DURATION_SEC : state.remainingSec,
-    usingDefaultFallback: true,
+    isUsingDefaultDuration: true,
   };
 }
 

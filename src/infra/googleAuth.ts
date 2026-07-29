@@ -35,7 +35,7 @@
  *
  * _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7_
  */
-import type { StorageLike } from './fakeStorage';
+import type { StorageLike } from './storageLike';
 import { describeError, resolveStorage } from './utils';
 
 /* -------------------------------------------------------------------------- */
@@ -229,7 +229,7 @@ const defaultTokenClientFactory: TokenClientFactory = (config) => {
   return oauth2.initTokenClient(config);
 };
 
-function humanMessageForCause(cause: GoogleAuthErrorCause): string {
+function errorMessageFor(cause: GoogleAuthErrorCause): string {
   switch (cause) {
     case 'access_denied':
       return 'Authorization was denied. You can retry connecting to Google.';
@@ -292,7 +292,7 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
 
   // A single in-flight request's continuation. GIS's token client invokes one
   // shared callback per request, so we route it to the current promise.
-  let pending: {
+  let inflightRequest: {
     resolve: (token: CachedToken) => void;
     reject: (err: GoogleAuthError) => void;
     timer: ReturnType<typeof setTimeout>;
@@ -328,31 +328,31 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
     }
   }
 
-  function settleSuccess(token: CachedToken): void {
-    const p = pending;
+  function resolveRequest(token: CachedToken): void {
+    const p = inflightRequest;
     if (!p) return; // stale callback (e.g. after a timeout) — ignore
     clearTimeout(p.timer);
-    pending = null;
+    inflightRequest = null;
     p.resolve(token);
   }
 
-  function settleFailure(cause: GoogleAuthErrorCause, message?: string): void {
-    const p = pending;
+  function rejectRequest(cause: GoogleAuthErrorCause, message?: string): void {
+    const p = inflightRequest;
     if (!p) return; // stale callback — ignore
     clearTimeout(p.timer);
-    pending = null;
-    p.reject(new GoogleAuthError(cause, message ?? humanMessageForCause(cause)));
+    inflightRequest = null;
+    p.reject(new GoogleAuthError(cause, message ?? errorMessageFor(cause)));
   }
 
   function handleTokenResponse(response: GisTokenResponse): void {
     if (response.error) {
       const cause: GoogleAuthErrorCause =
         response.error === 'access_denied' ? 'access_denied' : 'unknown';
-      settleFailure(cause, response.error_description ?? response.error);
+      rejectRequest(cause, response.error_description ?? response.error);
       return;
     }
     if (!response.access_token) {
-      settleFailure('no_token');
+      rejectRequest('no_token');
       return;
     }
     const expiresInSec =
@@ -365,11 +365,11 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
     };
     cached = token;
     persist(token);
-    settleSuccess(token);
+    resolveRequest(token);
   }
 
   function handleError(error: GisErrorResponse): void {
-    settleFailure(causeFromGisError(error), error.message);
+    rejectRequest(causeFromGisError(error), error.message);
   }
 
   function ensureClient(): GisTokenClient {
@@ -388,9 +388,9 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
       requestOptions: RequestAccessTokenOptions = {},
     ): Promise<CachedToken> {
       return new Promise<CachedToken>((resolve, reject) => {
-        if (pending) {
+        if (inflightRequest) {
           // Only one outstanding request at a time; caller may retry later.
-          reject(new GoogleAuthError('in_progress', humanMessageForCause('in_progress')));
+          reject(new GoogleAuthError('in_progress', errorMessageFor('in_progress')));
           return;
         }
 
@@ -408,11 +408,11 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
 
         // Reject if no response arrives within the timeout window (Req 11.6).
         const timer = setTimeout(() => {
-          pending = null;
-          reject(new GoogleAuthError('timeout', humanMessageForCause('timeout')));
+          inflightRequest = null;
+          reject(new GoogleAuthError('timeout', errorMessageFor('timeout')));
         }, timeoutMs);
 
-        pending = { resolve, reject, timer };
+        inflightRequest = { resolve, reject, timer };
 
         try {
           // Default to forcing consent on explicit connect (Req 11.1).
@@ -421,7 +421,7 @@ export function createGoogleAuth(options: GoogleAuthOptions): GoogleAuth {
           });
         } catch (err) {
           clearTimeout(timer);
-          pending = null;
+          inflightRequest = null;
           reject(new GoogleAuthError('unknown', describeError(err)));
         }
       });

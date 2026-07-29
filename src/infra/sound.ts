@@ -34,7 +34,7 @@ export interface SoundDef {
 const START_OUTPUT_GAIN = 1.6; // start clicks: a bit louder / more intense
 const END_OUTPUT_GAIN = 1.0; // end alarms/beeps: normal volume
 const masterGains = new WeakMap<AudioContext, GainNode>();
-function output(ctx: AudioContext): GainNode {
+function getMasterGain(ctx: AudioContext): GainNode {
   let g = masterGains.get(ctx);
   if (!g) {
     g = ctx.createGain();
@@ -61,7 +61,7 @@ function tone(
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(peak, start + 0.015);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-  osc.connect(gain).connect(output(ctx));
+  osc.connect(gain).connect(getMasterGain(ctx));
   osc.start(start);
   osc.stop(start + dur + 0.03);
 }
@@ -95,7 +95,7 @@ function noiseClick(
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(peak, start + 0.001);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-  src.connect(filter).connect(gain).connect(output(ctx));
+  src.connect(filter).connect(gain).connect(getMasterGain(ctx));
   src.start(start);
   src.stop(start + dur + 0.02);
 }
@@ -131,7 +131,7 @@ function thump(
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(peak, start + 0.005);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-  osc.connect(gain).connect(output(ctx));
+  osc.connect(gain).connect(getMasterGain(ctx));
   osc.start(start);
   osc.stop(start + dur + 0.03);
 }
@@ -300,7 +300,7 @@ export function createSoundPlayer(): SoundPlayer {
     if (!audio) return;
     if (audio.state === 'suspended') void audio.resume().catch(() => {});
     // Start clicks play a bit louder; end alarms stay at normal volume.
-    output(audio).gain.value =
+    getMasterGain(audio).gain.value =
       kind === 'start' ? START_OUTPUT_GAIN : END_OUTPUT_GAIN;
     const def = catalog(kind).find((s) => s.id === id) ?? catalog(kind)[0];
     try {

@@ -1,7 +1,7 @@
 /**
  * Shared infrastructure utilities used across multiple infra modules.
  */
-import type { StorageLike } from './fakeStorage';
+import type { StorageLike } from './storageLike';
 
 /**
  * Return a human-readable description of an unknown thrown value.

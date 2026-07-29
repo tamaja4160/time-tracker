@@ -32,7 +32,7 @@ import {
   type TokenClientFactory,
 } from './googleAuth';
 import { createAuthClient, AUTH_META_STORAGE_KEY } from './authClient';
-import { createFakeStorage } from './fakeStorage';
+import { createFakeStorage } from '../test/fakeStorage';
 
 /* -------------------------------------------------------------------------- */
 /* Fake GIS token client harness                                              */

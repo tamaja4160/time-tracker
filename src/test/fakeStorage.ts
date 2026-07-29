@@ -1,18 +1,15 @@
 /**
  * In-memory `Storage`-like fake for tests (and any non-browser environment).
  *
- * Implements the subset of the DOM `Storage` interface that {@link createLogStore}
- * depends on, so an isolated, deterministic store can be injected in unit and
- * property tests instead of the real `window.localStorage`.
+ * Implements the {@link StorageLike} interface so an isolated, deterministic
+ * store can be injected in unit and property tests instead of `window.localStorage`.
  *
  * Optional hooks (`failOnGet` / `failOnSet`) let tests simulate the
  * retrieval/write failures required by Requirements 9.4 and 9.5.
  */
-export interface StorageLike {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
+import type { StorageLike } from '../infra/storageLike';
+
+export type { StorageLike };
 
 export interface FakeStorageOptions {
   /** When set, `getItem` throws this error (simulates a retrieval failure). */

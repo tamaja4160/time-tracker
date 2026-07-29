@@ -1,7 +1,7 @@
 import { test, fc } from '@fast-check/vitest';
 import { describe, expect } from 'vitest';
 import { createLogStore } from './logStore';
-import { createFakeStorage } from './fakeStorage';
+import { createFakeStorage } from '../test/fakeStorage';
 import type { LogEntry } from '../types';
 
 // Feature: pomodoro-timer, Property 12: For any activity log, saving it to the Log_Store and then loading it back yields a log that matches the original field-by-field and preserves record count and order.

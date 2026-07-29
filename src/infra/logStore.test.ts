@@ -12,7 +12,7 @@
 import { describe, test, expect } from 'vitest';
 import type { LogEntry } from '../types';
 import { createLogStore, LOG_STORE_KEY } from './logStore';
-import { createFakeStorage } from './fakeStorage';
+import { createFakeStorage } from '../test/fakeStorage';
 
 function sampleEntry(): LogEntry {
   return {

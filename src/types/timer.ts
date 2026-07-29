@@ -40,7 +40,7 @@ export interface TimerState {
   pausedRemainingSec: number | null;
   sessionStartEpochMs: number | null; // for Log_Entry start time
   sessionEndEpochMs: number | null; // set when Completed
-  usingDefaultFallback: boolean; // Req 1.5 / 2.5 indication
+  isUsingDefaultDuration: boolean; // Req 1.5 / 2.5: true when configured duration fell back to default
   // Transient outcome of the most recent transition (optional; see above).
   lastTransition?: TimerTransitionOutcome;
 }

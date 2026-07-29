@@ -72,8 +72,8 @@ export interface AppProps {
   sound?: SoundPlayer;
 }
 
-/** A `fetch` that always rejects, used only when no global `fetch` exists. */
-const unavailableFetch = (() =>
+/** A `fetch` that always rejects — used as a fallback when no global `fetch` exists. */
+const noopFetch = (() =>
   Promise.reject(new Error('fetch is unavailable in this environment'))) as unknown as typeof fetch;
 
 export function App({
@@ -109,7 +109,7 @@ export function App({
         fetchFn:
           typeof globalThis.fetch === 'function'
             ? globalThis.fetch.bind(globalThis)
-            : unavailableFetch,
+            : noopFetch,
       }),
     [sheetsConnectorProp, googleAuth],
   );
@@ -235,12 +235,12 @@ export function App({
   /** Transient positive notice when an entry is written to Google Sheets. */
   const [writeNotice, setWriteNotice] = useState<string | null>(null);
   const [errors, setErrors] = useState<AppError[]>([]);
-  const errorSeq = useRef(0);
+  const errorIdCounter = useRef(0);
 
   /** Push an app-level error onto the shared banner (newest first). */
   const pushError = useCallback((message: string) => {
-    errorSeq.current += 1;
-    const id = `err-${errorSeq.current}`;
+    errorIdCounter.current += 1;
+    const id = `err-${errorIdCounter.current}`;
     setErrors((prev) => [{ id, message }, ...prev]);
   }, []);
 
@@ -272,7 +272,7 @@ export function App({
   }, []);
 
   // --- Activity completion flow ---------------------------------------------
-  const promptOpen = state.status === 'completed';
+  const isPromptOpen = state.status === 'completed';
 
   const handleActivitySubmit = useCallback(
     (description: string) => {
@@ -458,7 +458,7 @@ export function App({
 
       {/* Completion prompt; retains entered text on append/persist failure. */}
       <ActivityPrompt
-        open={promptOpen}
+        open={isPromptOpen}
         onSubmit={handleActivitySubmit}
         submitError={activitySubmitError}
       />

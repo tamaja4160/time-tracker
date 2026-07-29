@@ -1,7 +1,7 @@
 import { test, fc } from '@fast-check/vitest';
 import { expect } from 'vitest';
 import type { LogEntry } from '../types';
-import { toCsv, parseCsv, CSV_HEADER, deriveId, deriveStartEpochMs } from './csvExporter';
+import { toCsv, parseCsv, CSV_HEADER, computeEntryId, parseStartEpochMs } from './csvExporter';
 
 // Feature: pomodoro-timer, Property 14: For any activity log, the produced CSV has the four-column header row (date, start time, end time, description) as its first record, contains exactly one data record per log entry, and renders dates as YYYY-MM-DD and times as HH:MM:SS.
 // Validates: Requirements 10.1, 10.2
@@ -36,12 +36,12 @@ const timeString = fc
 const logEntry: fc.Arbitrary<LogEntry> = fc
   .tuple(dateString, timeString, timeString, fc.string({ maxLength: 60 }))
   .map(([date, startTime, endTime, description]) => ({
-    id: deriveId(date, startTime, endTime, description),
+    id: computeEntryId(date, startTime, endTime, description),
     date,
     startTime,
     endTime,
     description,
-    startEpochMs: deriveStartEpochMs(date, startTime),
+    startEpochMs: parseStartEpochMs(date, startTime),
   }));
 
 const activityLog = fc.array(logEntry, { minLength: 0, maxLength: 25 });

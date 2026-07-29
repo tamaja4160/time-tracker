@@ -42,7 +42,7 @@
  * _Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.7, 11.8_
  */
 import type { AuthClient } from '../types/google';
-import type { StorageLike } from './fakeStorage';
+import type { StorageLike } from './storageLike';
 import { resolveStorage } from './utils';
 import { GoogleAuthError, type GoogleAuth } from './googleAuth';
 
@@ -163,7 +163,7 @@ export function createAuthClient(
   // In-memory working copy of the metadata. Hydrated from storage on first
   // access so a storage read failure surfaces lazily as an AuthStoreError.
   let meta: AuthMeta = { ...DEFAULT_AUTH_META };
-  let hydrated = false;
+  let isLoaded = false;
 
   /** Read + parse the persisted metadata; throws on a storage read failure. */
   function loadMeta(): AuthMeta {
@@ -204,19 +204,19 @@ export function createAuthClient(
     }
   }
 
-  /** Hydrate the in-memory copy from storage once (may throw on read failure). */
-  function ensureHydrated(): void {
-    if (hydrated) return;
+  /** Load the in-memory metadata from storage once (may throw on read failure). */
+  function ensureLoaded(): void {
+    if (isLoaded) return;
     meta = loadMeta();
-    hydrated = true;
+    isLoaded = true;
   }
 
   /**
    * Reconcile the persisted metadata with the live token status and persist it,
    * preserving the currently designated target sheet id.
    */
-  function syncFromLiveStatus(): { connected: boolean; expiresAtMs: number | null } {
-    ensureHydrated();
+  function syncMetaFromToken(): { connected: boolean; expiresAtMs: number | null } {
+    ensureLoaded();
     const status = googleAuth.getStatus();
     const next: AuthMeta = {
       connected: status.connected,
@@ -231,11 +231,11 @@ export function createAuthClient(
     async getStatus(): Promise<{ connected: boolean; expiresAtMs: number | null }> {
       // Source of truth is the live token cache; mirror it into the Auth_Store.
       // A storage failure surfaces as AuthStoreError (Req 11.8) for the UI.
-      return syncFromLiveStatus();
+      return syncMetaFromToken();
     },
 
     async connect(): Promise<void> {
-      ensureHydrated();
+      ensureLoaded();
       // Launch the GIS consent flow (Req 11.1-11.2). A GoogleAuthError
       // (access_denied / timeout / popup_closed / ...) propagates unchanged so
       // the UI can show a cause-specific message and offer retry (Req 11.6).
@@ -249,7 +249,7 @@ export function createAuthClient(
     },
 
     async signOut(): Promise<void> {
-      ensureHydrated();
+      ensureLoaded();
       // Discard the cached access token (Req 11.5) ...
       googleAuth.clearToken();
       // ... and clear the connection metadata while keeping the chosen target
@@ -262,17 +262,17 @@ export function createAuthClient(
     },
 
     getMeta(): AuthMeta {
-      ensureHydrated();
+      ensureLoaded();
       return { ...meta };
     },
 
     getTargetSheetId(): string | null {
-      ensureHydrated();
+      ensureLoaded();
       return meta.targetSheetId;
     },
 
     setTargetSheetId(sheetId: string | null): void {
-      ensureHydrated();
+      ensureLoaded();
       saveMeta({ ...meta, targetSheetId: sheetId });
     },
 

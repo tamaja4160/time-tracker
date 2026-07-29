@@ -1,6 +1,6 @@
 import { test, fc } from '@fast-check/vitest';
 import { describe, expect } from 'vitest';
-import { toCsv, parseCsv, deriveId, deriveStartEpochMs } from './csvExporter';
+import { toCsv, parseCsv, computeEntryId, parseStartEpochMs } from './csvExporter';
 import type { LogEntry } from '../types';
 
 // Feature: pomodoro-timer, Property 13: For any activity log — including descriptions containing commas, double quotes, and line breaks — exporting to CSV and parsing it back produces log entries matching the original field-by-field and preserving record count and order.
@@ -8,8 +8,8 @@ import type { LogEntry } from '../types';
 
 /**
  * The CSV only carries four fields (date, startTime, endTime, description).
- * `parseCsv` reconstructs `id` via {@link deriveId} and `startEpochMs` via
- * {@link deriveStartEpochMs}. To exercise an exact six-field round-trip we
+ * `parseCsv` reconstructs `id` via {@link computeEntryId} and `startEpochMs` via
+ * {@link parseStartEpochMs}. To exercise an exact six-field round-trip we
  * build each generated `LogEntry` from generated CSV-carried fields using the
  * same derivation helpers, and use date/time strings `deriveStartEpochMs`
  * can parse (YYYY-MM-DD and HH:MM:SS) so `startEpochMs` is stable.
@@ -68,12 +68,12 @@ const logEntry: fc.Arbitrary<LogEntry> = fc
     description: adversarialDescription,
   })
   .map(({ date, startTime, endTime, description }) => ({
-    id: deriveId(date, startTime, endTime, description),
+    id: computeEntryId(date, startTime, endTime, description),
     date,
     startTime,
     endTime,
     description,
-    startEpochMs: deriveStartEpochMs(date, startTime),
+    startEpochMs: parseStartEpochMs(date, startTime),
   }));
 
 /** An activity log: array of entries, including the empty log. */

@@ -75,7 +75,7 @@ function TimerScreenContent({
         remainingSec={state.remainingSec}
         configuredDurationSec={state.configuredDurationSec}
         status={state.status}
-        usingDefaultFallback={state.usingDefaultFallback}
+        usingDefaultFallback={state.isUsingDefaultDuration}
       />
 
       {/* Start / Pause / Resume (one 3D button) + immediate Reset (Req 3-5). */}
