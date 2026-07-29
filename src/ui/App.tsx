@@ -415,16 +415,18 @@ export function App({
       </div>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
-        {/* Video hero — replace VIDEO_ID with your YouTube short ID */}
-        <div className="overflow-hidden rounded-4xl border border-black/5 bg-white shadow-card">
-          <div className="relative w-full" style={{ paddingBottom: '177.78%' /* 9:16 for Shorts */ }}>
-            <iframe
-              className="absolute inset-0 h-full w-full"
-              src="https://www.youtube.com/embed/om_6WSfRLZ8?rel=0&modestbranding=1"
-              title="Why this app exists"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+        {/* Video — compact centered preview */}
+        <div className="flex justify-center">
+          <div className="w-48 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-card sm:w-56">
+            <div className="relative w-full" style={{ paddingBottom: '177.78%' /* 9:16 for Shorts */ }}>
+              <iframe
+                className="absolute inset-0 h-full w-full"
+                src="https://www.youtube.com/embed/om_6WSfRLZ8?rel=0&modestbranding=1"
+                title="Why this app exists"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
           </div>
         </div>
 
