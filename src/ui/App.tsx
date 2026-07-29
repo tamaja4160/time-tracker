@@ -418,10 +418,9 @@ export function App({
         {/* Video hero — replace VIDEO_ID with your YouTube short ID */}
         <div className="overflow-hidden rounded-4xl border border-black/5 bg-white shadow-card">
           <div className="relative w-full" style={{ paddingBottom: '177.78%' /* 9:16 for Shorts */ }}>
-            {/* TODO: replace VIDEO_ID below with your YouTube Short video ID */}
             <iframe
               className="absolute inset-0 h-full w-full"
-              src="https://www.youtube.com/embed/VIDEO_ID?autoplay=0&rel=0&modestbranding=1"
+              src="https://www.youtube.com/embed/om_6WSfRLZ8?rel=0&modestbranding=1"
               title="Why this app exists"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
