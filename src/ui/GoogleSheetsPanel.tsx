@@ -45,7 +45,7 @@ import {
 } from '../infra/googleSheets';
 
 /** Default name offered for a newly created sheet (Req 12.1). */
-export const DEFAULT_SHEET_NAME = 'Time Tracker';
+export const DEFAULT_SHEET_NAME = 'FocusLog';
 
 export interface GoogleSheetsPanelProps {
   /** Browser auth client (connect / sign-out / status / target sheet id). */
