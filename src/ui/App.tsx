@@ -478,11 +478,8 @@ export function App({
           </p>
         </div>
 
-        {/* Video — compact centered preview with label */}
+        {/* Video — compact centered preview */}
         <div className="flex flex-col items-center gap-3">
-          <h2 className="text-2xl font-bold tracking-tight text-ink">
-            How to boost productivity?
-          </h2>
           <div className="w-48 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-card sm:w-56">
             <div className="relative w-full" style={{ paddingBottom: '177.78%' /* 9:16 for Shorts */ }}>
               <iframe
