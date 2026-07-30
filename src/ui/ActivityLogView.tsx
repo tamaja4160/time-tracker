@@ -44,7 +44,7 @@ export function ActivityLogView({ entries, error, exportBar }: ActivityLogViewPr
   return (
     <section
       aria-label="Activity log"
-      className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-white p-6 shadow-card sm:p-7"
+      className="flex flex-col gap-4 rounded-4xl border border-black/5 bg-canvas p-6 shadow-card sm:p-7"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold tracking-tight text-ink">Activity log</h2>
@@ -54,7 +54,7 @@ export function ActivityLogView({ entries, error, exportBar }: ActivityLogViewPr
       {error && (
         <p
           role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700"
+          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400"
         >
           {/* Surface the failure but keep existing entries visible (Req 8.4, 8.5). */}
           The activity log could not be updated. Showing the last known entries.

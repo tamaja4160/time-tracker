@@ -300,9 +300,9 @@ export function GoogleSheetsPanel({
     <div className="flex flex-col gap-4">
       {/* Connection status + controls */}
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-ink-muted">
           Status:{' '}
-          <span className="font-medium">
+          <span className="font-medium text-ink">
             {connected ? 'Connected' : 'Not connected'}
           </span>
         </p>
@@ -347,7 +347,7 @@ export function GoogleSheetsPanel({
 
       {/* Write guard: must be signed in (Req 13.2) */}
       {!connection.connected ? (
-        <p role="status" aria-live="polite" className="text-sm text-slate-600">
+        <p role="status" aria-live="polite" className="text-sm text-ink-muted">
           Sign in and connect to Google before creating or choosing a sheet.
         </p>
       ) : (
@@ -356,7 +356,7 @@ export function GoogleSheetsPanel({
           <div className="flex flex-col gap-2">
             <label
               htmlFor={nameFieldId}
-              className="text-sm font-medium text-slate-700"
+              className="text-sm font-medium text-ink"
             >
               Create a new sheet
             </label>
@@ -368,7 +368,7 @@ export function GoogleSheetsPanel({
               aria-invalid={nameError !== null}
               aria-describedby={nameError ? nameErrorId : undefined}
               onChange={(event) => setNewSheetName(event.target.value)}
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-slate-100 aria-[invalid=true]:border-red-500"
+              className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
             />
             {nameError && (
               <p id={nameErrorId} role="alert" className="text-sm text-red-600">
@@ -385,22 +385,21 @@ export function GoogleSheetsPanel({
             </button>
           </div>
 
-          {/* Required-columns guidance (Req 12.2-12.4). */}
-          <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
-            <p className="font-medium text-slate-700">
+          <div className="rounded-md bg-ink/5 p-3 text-sm text-ink-muted">
+            <p className="font-medium text-ink-soft">
               An existing sheet must have these exact column headers in row 1:
             </p>
             <ul className="mt-1 flex flex-wrap gap-2">
               {REQUIRED_COLUMNS.map((col) => (
                 <li
                   key={col}
-                  className="rounded bg-white px-2 py-0.5 font-mono text-xs ring-1 ring-slate-300"
+                  className="rounded bg-canvas px-2 py-0.5 font-mono text-xs ring-1 ring-black/10"
                 >
                   {col}
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-ink-muted">
               Order doesn't matter and extra columns are fine, but all four
               names must be present (lowercase, e.g. "start time").
             </p>
@@ -411,7 +410,7 @@ export function GoogleSheetsPanel({
             <div className="flex items-center justify-between">
               <label
                 htmlFor={sheetIdFieldId}
-                className="text-sm font-medium text-slate-700"
+                className="text-sm font-medium text-ink"
               >
                 Use an existing sheet
               </label>
@@ -419,7 +418,7 @@ export function GoogleSheetsPanel({
                 type="button"
                 onClick={() => void loadSheets()}
                 disabled={isBusy || isLoadingSheets}
-                className="text-xs font-medium text-sky-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-xs font-medium text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoadingSheets ? 'Loading…' : 'Refresh list'}
               </button>
@@ -435,7 +434,7 @@ export function GoogleSheetsPanel({
                   setExistingSheetId(id);
                   if (id) void handleSelectSheet(id);
                 }}
-                className="rounded-md border border-slate-300 px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">— Choose one of your sheets —</option>
                 {sheets.map((s) => (
@@ -445,7 +444,7 @@ export function GoogleSheetsPanel({
                 ))}
               </select>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-ink-muted">
                 {isLoadingSheets
                   ? 'Loading your spreadsheets…'
                   : 'No spreadsheets found yet. Use "Refresh list", or paste a sheet id below.'}
@@ -461,7 +460,7 @@ export function GoogleSheetsPanel({
                 value={existingSheetId}
                 disabled={isBusy}
                 onChange={(event) => setExistingSheetId(event.target.value)}
-                className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm disabled:cursor-not-allowed disabled:bg-slate-100"
+                className="flex-1 rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
               />
               <button
                 type="button"
@@ -498,9 +497,9 @@ export function GoogleSheetsPanel({
       {/* Target sheet status / missing-target guard (Req 13.3) */}
       {target && target.spreadsheetId ? (
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-ink-muted">
             Target sheet:{' '}
-            <span className="font-medium">
+            <span className="font-medium text-ink">
               {target.sheetTitle || target.spreadsheetId}
             </span>
           </p>
@@ -512,7 +511,7 @@ export function GoogleSheetsPanel({
         </div>
       ) : (
         connection.connected && (
-          <p role="status" aria-live="polite" className="text-sm text-slate-600">
+          <p role="status" aria-live="polite" className="text-sm text-ink-muted">
             Create or choose a target sheet before writing entries.
           </p>
         )

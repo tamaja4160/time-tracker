@@ -97,7 +97,7 @@ export function TimerDisplay({
             cy={RING_SIZE / 2}
             r={RING_RADIUS}
             fill="none"
-            stroke="#e8e8ed"
+            stroke="var(--ring-track, #e8e8ed)"
             strokeWidth={RING_STROKE}
           />
           <circle
@@ -132,7 +132,7 @@ export function TimerDisplay({
       {usingDefaultFallback && (
         <p
           role="status"
-          className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800"
+          className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
         >
           Using default duration (15:00)
         </p>

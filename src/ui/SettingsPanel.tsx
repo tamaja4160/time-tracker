@@ -15,6 +15,9 @@ export interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
 
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
+
   soundEnabled: boolean;
   onToggleSound: () => void;
 
@@ -30,6 +33,8 @@ export interface SettingsPanelProps {
 export function SettingsPanel({
   open,
   onClose,
+  darkMode,
+  onToggleDarkMode,
   soundEnabled,
   onToggleSound,
   selStart,
@@ -76,12 +81,12 @@ export function SettingsPanel({
         role="dialog"
         aria-label="Settings"
         aria-modal="true"
-        className={`fixed right-0 top-0 z-30 h-full w-full max-w-sm overflow-y-auto bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 z-30 h-full w-full max-w-sm overflow-y-auto bg-canvas shadow-2xl transition-transform duration-300 ease-in-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-black/8 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-black/8 px-6 py-5 dark:border-white/10">
           <h2 className="text-base font-semibold tracking-tight text-ink">Settings</h2>
           <button
             ref={firstFocusRef}
@@ -97,6 +102,32 @@ export function SettingsPanel({
         </div>
 
         <div className="flex flex-col gap-7 px-6 py-6">
+          {/* ── Appearance ────────────────────────────────── */}
+          <section aria-labelledby="settings-appearance-heading">
+            <h3 id="settings-appearance-heading" className="mb-4 text-sm font-semibold uppercase tracking-widest text-ink-muted">
+              Appearance
+            </h3>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-ink">Dark mode</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={darkMode}
+                onClick={onToggleDarkMode}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 ${
+                  darkMode ? 'bg-accent' : 'bg-ink/20'
+                }`}
+              >
+                <span className="sr-only">{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</span>
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    darkMode ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </section>
+
           {/* ── Sound ─────────────────────────────────────── */}
           <section aria-labelledby="settings-sound-heading">
             <h3 id="settings-sound-heading" className="mb-4 text-sm font-semibold uppercase tracking-widest text-ink-muted">

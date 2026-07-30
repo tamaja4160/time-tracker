@@ -3,6 +3,30 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light mode tokens (default) ───────────────────────────────────── */
+  :root {
+    --color-canvas:      #f5f5f7;
+    --color-ink:         #1d1d1f;
+    --color-ink-soft:    #424245;
+    --color-ink-muted:   #6e6e73;
+    --color-accent:      #0071e3;
+    --color-accent-hover:#0077ed;
+    --color-accent-ring: #0071e3;
+    --ring-track:        #e8e8ed;
+  }
+
+  /* ── Dark mode tokens ───────────────────────────────────────────────── */
+  html.dark {
+    --color-canvas:      #161617;
+    --color-ink:         #f5f5f7;
+    --color-ink-soft:    #d1d1d6;
+    --color-ink-muted:   #8e8e93;
+    --color-accent:      #2997ff;
+    --color-accent-hover:#3da0ff;
+    --color-accent-ring: #2997ff;
+    --ring-track:        #3a3a3c;
+  }
+
   html,
   body,
   #root {

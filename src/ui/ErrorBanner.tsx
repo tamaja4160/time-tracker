@@ -46,14 +46,14 @@ export function ErrorBanner({ errors, onDismiss }: ErrorBannerProps) {
         <div
           key={error.id}
           role="alert"
-          className="flex items-start justify-between gap-3 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-800"
+          className="flex items-start justify-between gap-3 rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400"
         >
           <span>{error.message}</span>
           <button
             type="button"
             onClick={() => onDismiss(error.id)}
             aria-label="Dismiss notification"
-            className="shrink-0 rounded px-2 font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="shrink-0 rounded px-2 font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-red-400 dark:hover:bg-red-900/40"
           >
             Dismiss
           </button>

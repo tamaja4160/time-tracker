@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -17,17 +18,18 @@ export default {
         ],
       },
       colors: {
-        // Apple-inspired neutral surface + a single confident accent.
-        canvas: '#f5f5f7',
+        // Resolved at runtime via CSS custom properties so dark mode only
+        // needs to swap the variables on the `html.dark` selector.
+        canvas: 'var(--color-canvas)',
         ink: {
-          DEFAULT: '#1d1d1f',
-          soft: '#424245',
-          muted: '#6e6e73',
+          DEFAULT: 'var(--color-ink)',
+          soft: 'var(--color-ink-soft)',
+          muted: 'var(--color-ink-muted)',
         },
         accent: {
-          DEFAULT: '#0071e3',
-          hover: '#0077ed',
-          ring: '#0071e3',
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          ring: 'var(--color-accent-ring)',
         },
       },
       borderRadius: {

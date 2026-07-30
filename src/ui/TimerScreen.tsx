@@ -68,7 +68,7 @@ function TimerScreenContent({
   return (
     <section
       aria-label="Timer"
-      className="flex flex-col items-center gap-8 rounded-4xl border border-black/5 bg-white px-6 py-10 shadow-card sm:px-10"
+      className="flex flex-col items-center gap-8 rounded-4xl border border-black/5 bg-canvas px-6 py-10 shadow-card sm:px-10"
     >
       {/* Remaining time in MM:SS with a circular progress ring (Req 1.3, 1.5). */}
       <TimerDisplay

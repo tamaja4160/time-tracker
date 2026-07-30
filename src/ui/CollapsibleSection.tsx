@@ -24,7 +24,7 @@ export function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="rounded-4xl border border-black/5 bg-white shadow-card overflow-hidden">
+    <div className="rounded-4xl border border-black/5 bg-canvas shadow-card overflow-hidden">
       {/* Toggle button */}
       <button
         type="button"

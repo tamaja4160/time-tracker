@@ -95,7 +95,7 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-sm rounded-4xl bg-white p-7 shadow-card-lg animate-scale-in"
+        className="w-full max-w-sm rounded-4xl bg-canvas p-7 shadow-card-lg animate-scale-in"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5 text-center">
@@ -117,7 +117,7 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
                 setValidationMessage(null);
               }
             }}
-            className="w-full rounded-2xl border border-black/10 bg-canvas px-4 py-3 text-center text-lg text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-2 focus:ring-accent-ring/30 aria-[invalid=true]:border-red-500"
+            className="w-full rounded-2xl border border-black/10 bg-canvas px-4 py-3 text-center text-lg text-ink transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-ring/30 aria-[invalid=true]:border-red-500"
           />
 
           {message != null && (
