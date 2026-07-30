@@ -213,9 +213,9 @@ export function App({
   useEffect(() => {
     const base = 'focus log';
     if (state.status === 'running') {
-      document.title = `${formatRemaining(state.remainingSec)} · ${base}`;
+      document.title = `${formatRemaining(state.remainingSec)} · Focus!`;
     } else if (state.status === 'paused') {
-      document.title = `${formatRemaining(state.remainingSec)} (paused) · ${base}`;
+      document.title = `${formatRemaining(state.remainingSec)} · Paused`;
     } else if (state.status === 'completed') {
       document.title = `⏰ Time's up! · ${base}`;
     } else {
