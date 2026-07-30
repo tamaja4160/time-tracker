@@ -17,8 +17,8 @@ import type { TimerEngine, TimerState } from '../types/timer';
 import { parseDuration } from './validation';
 import { SECONDS_PER_MINUTE } from './constants';
 
-/** Default_Duration: 1 minute = 60 seconds (temporary for demo video). */
-export const DEFAULT_DURATION_SEC = 1 * SECONDS_PER_MINUTE;
+/** Default_Duration: 15 minutes = 900 seconds (Req 2.2). */
+export const DEFAULT_DURATION_SEC = 15 * SECONDS_PER_MINUTE;
 
 const MS_PER_SECOND = 1000;
 
