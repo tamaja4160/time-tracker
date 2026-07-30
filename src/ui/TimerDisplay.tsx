@@ -73,11 +73,10 @@ export function TimerDisplay({
 
   const isPaused = status === 'paused';
   const isDone = status === 'completed';
-  const progressColor = isDone
-    ? '#34c759' // green when complete
-    : isPaused
-      ? '#ff9f0a' // amber when paused
-      : '#0071e3'; // accent blue while running/idle
+  // Ring always uses ink — black in light mode, white in dark mode.
+  void isPaused;
+  void isDone;
+  const progressColor = 'var(--ring-progress)';
 
   return (
     <div className="flex flex-col items-center gap-5">
@@ -132,7 +131,7 @@ export function TimerDisplay({
       {usingDefaultFallback && (
         <p
           role="status"
-          className="rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+          className="rounded-full bg-ink/8 px-3 py-1 text-sm font-medium text-ink-muted"
         >
           Using default duration (15:00)
         </p>

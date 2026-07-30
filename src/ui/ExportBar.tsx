@@ -81,7 +81,7 @@ export function ExportBar({ entries, download = defaultDownload }: ExportBarProp
       <button
         type="button"
         onClick={handleExport}
-        className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+        className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
       >
         Export CSV
       </button>

@@ -150,9 +150,9 @@ export function App({
       if (stored === 'dark') return true;
       if (stored === 'light') return false;
     } catch {
-      // localStorage unavailable (e.g. in tests) — fall back to system pref
+      // localStorage unavailable (e.g. in tests) — fall back to dark by default
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return true; // dark by default
   });
 
   useEffect(() => {
@@ -376,30 +376,53 @@ export function App({
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-10 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <h1 className="text-2xl font-semibold tracking-tight" style={{ fontFamily: "'Hammersmith One', sans-serif" }}>focus log</h1>
-          <button
-            type="button"
-            aria-label="Open settings"
-            onClick={() => setSettingsOpen(true)}
-            className="rounded-full p-2 text-ink-muted transition-colors hover:bg-ink/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-              <path
-                d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M16.42 12.58a1.5 1.5 0 0 0 .3 1.65l.05.05a1.82 1.82 0 0 1-2.57 2.57l-.05-.05a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.91 1.37V18a1.82 1.82 0 0 1-3.64 0v-.08a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.65.3l-.05.05a1.82 1.82 0 0 1-2.57-2.57l.05-.05a1.5 1.5 0 0 0 .3-1.65 1.5 1.5 0 0 0-1.37-.91H2a1.82 1.82 0 0 1 0-3.64h.08a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.65l-.05-.05a1.82 1.82 0 0 1 2.57-2.57l.05.05a1.5 1.5 0 0 0 1.65.3h.07A1.5 1.5 0 0 0 8.31 2V2a1.82 1.82 0 0 1 3.64 0v.08a1.5 1.5 0 0 0 .91 1.37 1.5 1.5 0 0 0 1.65-.3l.05-.05a1.82 1.82 0 0 1 2.57 2.57l-.05.05a1.5 1.5 0 0 0-.3 1.65v.07A1.5 1.5 0 0 0 18 8.31H18a1.82 1.82 0 0 1 0 3.64h-.08a1.5 1.5 0 0 0-1.5.63Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          <h1 className="text-2xl tracking-tight" style={{ fontFamily: "'Google Sans', 'Product Sans', sans-serif", fontWeight: 700 }}>focus log</h1>
+          <div className="flex items-center gap-1">
+            {/* Dark mode toggle */}
+            <button
+              type="button"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={toggleDarkMode}
+              className="rounded-full p-2 text-ink-muted transition-colors hover:bg-ink/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+            >
+              {darkMode ? (
+                /* Sun icon */
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+                  <circle cx="10" cy="10" r="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                /* Moon icon */
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+                  <path d="M17 12.5A7 7 0 0 1 7.5 3a7.001 7.001 0 1 0 9.5 9.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
+            {/* Settings gear */}
+            <button
+              type="button"
+              aria-label="Open settings"
+              onClick={() => setSettingsOpen(true)}
+              className="rounded-full p-2 text-ink-muted transition-colors hover:bg-ink/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+                <path
+                  d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16.42 12.58a1.5 1.5 0 0 0 .3 1.65l.05.05a1.82 1.82 0 0 1-2.57 2.57l-.05-.05a1.5 1.5 0 0 0-1.65-.3 1.5 1.5 0 0 0-.91 1.37V18a1.82 1.82 0 0 1-3.64 0v-.08a1.5 1.5 0 0 0-.98-1.37 1.5 1.5 0 0 0-1.65.3l-.05.05a1.82 1.82 0 0 1-2.57-2.57l.05-.05a1.5 1.5 0 0 0 .3-1.65 1.5 1.5 0 0 0-1.37-.91H2a1.82 1.82 0 0 1 0-3.64h.08a1.5 1.5 0 0 0 1.37-.98 1.5 1.5 0 0 0-.3-1.65l-.05-.05a1.82 1.82 0 0 1 2.57-2.57l.05.05a1.5 1.5 0 0 0 1.65.3h.07A1.5 1.5 0 0 0 8.31 2V2a1.82 1.82 0 0 1 3.64 0v.08a1.5 1.5 0 0 0 .91 1.37 1.5 1.5 0 0 0 1.65-.3l.05-.05a1.82 1.82 0 0 1 2.57 2.57l-.05.05a1.5 1.5 0 0 0-.3 1.65v.07A1.5 1.5 0 0 0 18 8.31H18a1.82 1.82 0 0 1 0 3.64h-.08a1.5 1.5 0 0 0-1.5.63Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -414,8 +437,6 @@ export function App({
         onPreviewSound={handlePreviewSound}
         notifPermission={notifPermission}
         onEnableNotifications={enableNotifications}
-        darkMode={darkMode}
-        onToggleDarkMode={toggleDarkMode}
       />
 
       {/* Shared transient/persistent error region (Req 13.5). */}

@@ -313,7 +313,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleConnect()}
               disabled={isBusy}
-              className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
             </button>
@@ -322,7 +322,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleSignOut()}
               disabled={isBusy}
-              className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Sign out
             </button>
@@ -379,7 +379,7 @@ export function GoogleSheetsPanel({
               type="button"
               onClick={() => void handleCreateSheet()}
               disabled={isBusy || !nameValidation.ok}
-              className="self-start rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="self-start rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Create sheet
             </button>
@@ -418,7 +418,7 @@ export function GoogleSheetsPanel({
                 type="button"
                 onClick={() => void loadSheets()}
                 disabled={isBusy || isLoadingSheets}
-                className="text-xs font-medium text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                className="text-xs font-medium text-ink hover:underline disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isLoadingSheets ? 'Loading…' : 'Refresh list'}
               </button>
@@ -466,7 +466,7 @@ export function GoogleSheetsPanel({
                 type="button"
                 onClick={() => void handleSelectSheet()}
                 disabled={isBusy}
-                className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Select
               </button>

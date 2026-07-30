@@ -117,7 +117,7 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
                 setValidationMessage(null);
               }
             }}
-            className="w-full rounded-2xl border border-black/10 bg-canvas px-4 py-3 text-center text-lg text-ink transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-ring/30 aria-[invalid=true]:border-red-500"
+            className="w-full rounded-2xl border border-black/10 bg-canvas px-4 py-3 text-center text-lg text-ink transition focus:border-ink/30 focus:outline-none focus:ring-2 focus:ring-ink/20 aria-[invalid=true]:border-red-500"
           />
 
           {message != null && (
@@ -128,7 +128,7 @@ export function ActivityPrompt({ open, onSubmit, submitError }: ActivityPromptPr
 
           <button
             type="submit"
-            className="rounded-full bg-accent px-4 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+            className="rounded-full bg-ink px-4 py-3 text-base font-medium text-canvas shadow-sm transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
           >
             Save
           </button>

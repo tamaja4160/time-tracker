@@ -92,12 +92,13 @@ export function TimerControls({
   // edge amount. The wrapper's bottom padding reserves the edge height so
   // siblings never shift. Class strings are literal for Tailwind's JIT.
   const base =
-    'relative select-none rounded-2xl w-44 py-4 text-center text-lg font-semibold text-white bg-accent ' +
+    'relative select-none rounded-2xl w-44 py-4 text-center text-lg font-semibold ' +
+    'bg-ink text-canvas ' +
     'transition-[transform,box-shadow] duration-100 ease-out focus:outline-none ' +
-    'focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2';
+    'focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
   const pressedClasses = `translate-y-[${EDGE_HEIGHT_PX}px] shadow-none`;
   const extendedClasses =
-    `shadow-[0_${EDGE_HEIGHT_PX}px_0_#0656b0] hover:bg-accent-hover active:translate-y-[${EDGE_HEIGHT_PX}px] active:shadow-none`;
+    `shadow-[0_${EDGE_HEIGHT_PX}px_0_rgba(0,0,0,0.35)] hover:bg-ink-soft active:translate-y-[${EDGE_HEIGHT_PX}px] active:shadow-none`;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -118,7 +119,7 @@ export function TimerControls({
           <button
             type="button"
             onClick={onReset}
-            className="rounded-full px-5 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+            className="rounded-full px-5 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-ink/5 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
           >
             Reset
           </button>
@@ -126,7 +127,7 @@ export function TimerControls({
       </div>
 
       {/* Transient not-applicable indication (Req 3.2, 4.5, 4.6). */}
-      <p role="status" aria-live="polite" className="min-h-[1.25rem] text-sm text-amber-700">
+      <p role="status" aria-live="polite" className="min-h-[1.25rem] text-sm text-ink-muted">
         {transientMessage}
       </p>
     </div>
