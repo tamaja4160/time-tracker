@@ -44,7 +44,7 @@ import {
 } from '../infra/googleSheets';
 
 /** Default name offered for a newly created sheet (Req 12.1). */
-export const DEFAULT_SHEET_NAME = 'FocusLog';
+export const DEFAULT_SHEET_NAME = 'focus log - activity log';
 
 export interface GoogleSheetsPanelProps {
   /** Browser auth client (connect / sign-out / status / target sheet id). */
@@ -288,11 +288,6 @@ export function GoogleSheetsPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Instruction — always visible at the top */}
-      <p className="text-sm text-ink-muted">
-        Sign in and connect to Google before creating or choosing a sheet.
-      </p>
-
       {/* Status line */}
       <p className="text-sm font-medium">
         Status:{' '}
