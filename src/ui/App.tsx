@@ -213,7 +213,7 @@ export function App({
   useEffect(() => {
     const base = 'focus log';
     if (state.status === 'running') {
-      document.title = `${formatRemaining(state.remainingSec)} · Focus!`;
+      document.title = `${formatRemaining(state.remainingSec)} · Focus`;
     } else if (state.status === 'paused') {
       document.title = `${formatRemaining(state.remainingSec)} · Paused`;
     } else if (state.status === 'completed') {
