@@ -31,7 +31,7 @@ export interface SoundDef {
  * level is set per playback by {@link createSoundPlayer} (louder for start
  * clicks, normal for end alarms). Cached per AudioContext.
  */
-const START_OUTPUT_GAIN = 3.5; // start clicks: louder
+const START_OUTPUT_GAIN = 6.0; // start clicks: maximum practical gain
 const END_OUTPUT_GAIN = 1.8;  // end alarms/beeps: louder
 const masterGains = new WeakMap<AudioContext, GainNode>();
 function getMasterGain(ctx: AudioContext): GainNode {
@@ -141,7 +141,7 @@ function thump(
 /* -------------------------------------------------------------------------- */
 
 export const START_SOUNDS: SoundDef[] = [
-  { id: 'low-tock', label: 'Low Tock', render: (c, t) => noiseClick(c, t, { type: 'lowpass', freq: 350, dur: 0.04 }) },
+  { id: 'low-tock', label: 'Low Tock', render: (c, t) => noiseClick(c, t, { type: 'lowpass', freq: 350, dur: 0.04, peak: 1.0 }) },
   { id: 'deep-thunk', label: 'Deep Thunk', render: (c, t) => noiseClick(c, t, { type: 'lowpass', freq: 180, q: 1.2, dur: 0.05, peak: 0.7 }) },
   { id: 'soft-clicker', label: 'Soft Clicker', render: (c, t) => noiseClick(c, t, { type: 'lowpass', freq: 500, dur: 0.03, peak: 0.5 }) },
   { id: 'hard-clicker', label: 'Hard Clicker', render: (c, t) => noiseClick(c, t, { type: 'highpass', freq: 1200, dur: 0.015, peak: 0.55 }) },
