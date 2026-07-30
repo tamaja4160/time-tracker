@@ -72,11 +72,8 @@ export function TimerDisplay({
   const dashOffset = RING_CIRCUMFERENCE * (1 - remainingFraction);
 
   const isPaused = status === 'paused';
-  const isDone = status === 'completed';
-  // Ring always uses ink — black in light mode, white in dark mode.
-  void isPaused;
-  void isDone;
-  const progressColor = 'var(--ring-progress)';
+  // Amber when paused, ink (black/white) otherwise.
+  const progressColor = isPaused ? '#ff9f0a' : 'var(--ring-progress)';
 
   return (
     <div className="flex flex-col items-center gap-5">

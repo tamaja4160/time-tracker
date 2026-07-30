@@ -36,8 +36,8 @@ export default {
         '4xl': '1.75rem',
       },
       boxShadow: {
-        card: '0 2px 6px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.14)',
-        'card-lg': '0 6px 16px rgba(0,0,0,0.12), 0 32px 64px rgba(0,0,0,0.20)',
+        card: 'var(--shadow-card, 0 2px 6px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.14))',
+        'card-lg': 'var(--shadow-card-lg, 0 6px 16px rgba(0,0,0,0.12), 0 32px 64px rgba(0,0,0,0.20))',
       },
       keyframes: {
         'fade-in': {

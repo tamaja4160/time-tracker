@@ -38,7 +38,7 @@ export interface ActivityLogViewProps {
  * non-destructive error indication.
  */
 export function ActivityLogView({ entries, error, exportBar }: ActivityLogViewProps) {
-  const rows = orderedForDisplay(entries);
+  const rows = orderedForDisplay(entries).slice(0, 12);
   const hasEntries = rows.length > 0;
 
   return (
