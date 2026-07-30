@@ -468,14 +468,23 @@ export function App({
       </div>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
-        {/* Hero — purpose statement for new visitors */}
-        <div className="flex flex-col items-center gap-3 text-center">
+        {/* Hero — purpose statement, data transparency, privacy link */}
+        <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-ink leading-tight">
             Have the most productive<br />week of your life.
           </h2>
           <p className="max-w-sm text-base text-ink-muted leading-relaxed">
             Track 15-minute focus sessions, log your output, and see exactly where your time goes — synced straight to Google Sheets.
           </p>
+          <p className="max-w-sm text-sm text-ink-muted leading-relaxed">
+            The optional Google Sheets integration asks for permission to write your session data directly to a spreadsheet in your own Google account. We do not store your data on any server.
+          </p>
+          <a
+            href="#/privacy"
+            className="text-sm font-medium text-ink underline underline-offset-2 hover:text-ink-soft transition-colors"
+          >
+            Privacy Policy
+          </a>
         </div>
 
         {/* Video — compact centered preview */}
