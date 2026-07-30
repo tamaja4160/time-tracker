@@ -521,6 +521,12 @@ export function App({
         onSubmit={handleActivitySubmit}
         submitError={activitySubmitError}
       />
+
+      <footer className="border-t border-black/5 px-6 py-5 text-center text-xs text-ink-muted">
+        <a href="#/privacy" className="hover:text-ink transition-colors">Privacy Policy</a>
+        <span className="mx-2">·</span>
+        <a href="#/terms" className="hover:text-ink transition-colors">Terms of Service</a>
+      </footer>
     </div>
   );
 }
