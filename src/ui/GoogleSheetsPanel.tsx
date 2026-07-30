@@ -33,7 +33,6 @@
 import { useEffect, useId, useState } from 'react';
 import type { TargetSheet } from '../types';
 import { validateSheetName } from '../domain/validation';
-import { REQUIRED_COLUMNS } from '../domain/sheetsMapping';
 import {
   GoogleAuthError,
   type BrowserAuthClient,
@@ -101,12 +100,9 @@ export function GoogleSheetsPanel({
   const [isBusy, setBusy] = useState(false);
 
   const [target, setTarget] = useState<TargetSheet | null>(null);
-  /** Whether the current target has been validated as having all columns. */
-  const [isTargetValid, setTargetValid] = useState(false);
 
   const [newSheetName, setNewSheetName] = useState(DEFAULT_SHEET_NAME);
   const [existingSheetId, setExistingSheetId] = useState('');
-  /** The user's existing spreadsheets, for the picker dropdown. */
   const [sheets, setSheets] = useState<SpreadsheetSummary[]>([]);
   const [isLoadingSheets, setLoadingSheets] = useState(false);
 
@@ -117,7 +113,6 @@ export function GoogleSheetsPanel({
 
   const nameFieldId = useId();
   const nameErrorId = useId();
-  const sheetIdFieldId = useId();
 
   // Live validation of the new-sheet name as the user types (Req 12.5).
   const nameValidation = validateSheetName(newSheetName);
@@ -259,11 +254,9 @@ export function GoogleSheetsPanel({
       const created = await sheetsConnector.createSheet(nameValidation.value);
       authClient.setTargetSheetId(created.spreadsheetId);
       setTarget(created);
-      setTargetValid(true);
       setStatusMessage(`Created and selected "${created.sheetTitle}".`);
-      void loadSheets(); // include the new sheet in the picker
+      void loadSheets();
     } catch (err) {
-      setTargetValid(false);
       handleSheetsError(err, 'Could not create the new sheet.');
     } finally {
       setBusy(false);
@@ -283,11 +276,8 @@ export function GoogleSheetsPanel({
       const selected = await sheetsConnector.selectSheet(trimmedId);
       authClient.setTargetSheetId(selected.spreadsheetId);
       setTarget(selected);
-      setTargetValid(true);
       setStatusMessage(`Selected "${selected.sheetTitle}". This sheet is valid.`);
     } catch (err) {
-      // On missing columns the previous target is retained (Req 12.4).
-      setTargetValid(false);
       handleSheetsError(err, 'Could not select the sheet.');
     } finally {
       setBusy(false);
@@ -298,122 +288,93 @@ export function GoogleSheetsPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Connection status + controls */}
-      <div className="flex flex-col gap-2">
-        <p className="text-sm text-ink-muted">
-          Status:{' '}
-          <span className="font-medium text-ink">
-            {connected ? 'Connected' : 'Not connected'}
-          </span>
-        </p>
+      {/* Instruction — always visible at the top */}
+      <p className="text-sm text-ink-muted">
+        Sign in and connect to Google before creating or choosing a sheet.
+      </p>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {!connection.connected || needsReauth ? (
-            <button
-              type="button"
-              onClick={() => void handleConnect()}
-              disabled={isBusy}
-              className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void handleSignOut()}
-              disabled={isBusy}
-              className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Sign out
-            </button>
-          )}
-        </div>
-
-        {/* Re-auth prompt (Req 11.7) */}
-        {connection.connected && needsReauth && (
-          <p role="status" aria-live="polite" className="text-sm text-amber-700">
-            Your Google authorization has expired. Re-authorize before writing
-            to the spreadsheet.
-          </p>
+      {/* Status line */}
+      <p className="text-sm font-medium">
+        Status:{' '}
+        {connected ? (
+          <span className="text-emerald-600 dark:text-emerald-400">Connected</span>
+        ) : (
+          <span className="text-red-600 dark:text-red-400">Not connected</span>
         )}
+      </p>
 
-        {/* Connect error with retry affordance left in place (Req 11.6) */}
-        {connectError && (
-          <p role="alert" className="text-sm text-red-600">
-            {connectError}
-          </p>
+      {/* Connect / sign-out controls */}
+      <div className="flex flex-wrap items-center gap-2">
+        {!connection.connected || needsReauth ? (
+          <button
+            type="button"
+            onClick={() => void handleConnect()}
+            disabled={isBusy}
+            className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void handleSignOut()}
+            disabled={isBusy}
+            className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Sign out
+          </button>
         )}
       </div>
 
-      {/* Write guard: must be signed in (Req 13.2) */}
-      {!connection.connected ? (
-        <p role="status" aria-live="polite" className="text-sm text-ink-muted">
-          Sign in and connect to Google before creating or choosing a sheet.
+      {/* Re-auth prompt (Req 11.7) */}
+      {connection.connected && needsReauth && (
+        <p role="status" aria-live="polite" className="text-sm text-amber-700 dark:text-amber-400">
+          Your Google authorization has expired. Re-authorize before writing
+          to the spreadsheet.
         </p>
-      ) : (
-        <>
-          {/* New-sheet flow (Req 12.1, 12.5) */}
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor={nameFieldId}
-              className="text-sm font-medium text-ink"
-            >
-              Create a new sheet
-            </label>
-            <input
-              id={nameFieldId}
-              type="text"
-              value={newSheetName}
-              disabled={isBusy}
-              aria-invalid={nameError !== null}
-              aria-describedby={nameError ? nameErrorId : undefined}
-              onChange={(event) => setNewSheetName(event.target.value)}
-              className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
-            />
-            {nameError && (
-              <p id={nameErrorId} role="alert" className="text-sm text-red-600">
-                {nameError}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => void handleCreateSheet()}
-              disabled={isBusy || !nameValidation.ok}
-              className="self-start rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Create sheet
-            </button>
-          </div>
+      )}
 
-          <div className="rounded-md bg-ink/5 p-3 text-sm text-ink-muted">
-            <p className="font-medium text-ink-soft">
-              An existing sheet must have these exact column headers in row 1:
-            </p>
-            <ul className="mt-1 flex flex-wrap gap-2">
-              {REQUIRED_COLUMNS.map((col) => (
-                <li
-                  key={col}
-                  className="rounded bg-canvas px-2 py-0.5 font-mono text-xs ring-1 ring-black/10"
-                >
-                  {col}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-1 text-xs text-ink-muted">
-              Order doesn't matter and extra columns are fine, but all four
-              names must be present (lowercase, e.g. "start time").
-            </p>
-          </div>
+      {/* Connect error (Req 11.6) */}
+      {connectError && (
+        <p role="alert" className="text-sm text-red-600">
+          {connectError}
+        </p>
+      )}
 
-          {/* Select-existing flow: pick from the user's sheets (Req 12.3, 12.4). */}
-          <div className="flex flex-col gap-2">
+      {/* Create-new-sheet flow — only when connected (Req 12.1, 12.5) */}
+      {connected && (
+        <div className="flex flex-col gap-2">
+          <label htmlFor={nameFieldId} className="text-sm font-medium text-ink">
+            Create a new sheet
+          </label>
+          <input
+            id={nameFieldId}
+            type="text"
+            value={newSheetName}
+            disabled={isBusy}
+            aria-invalid={nameError !== null}
+            aria-describedby={nameError ? nameErrorId : undefined}
+            onChange={(event) => setNewSheetName(event.target.value)}
+            className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
+          />
+          {nameError && (
+            <p id={nameErrorId} role="alert" className="text-sm text-red-600">
+              {nameError}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleCreateSheet()}
+            disabled={isBusy || !nameValidation.ok}
+            className="self-start rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Create sheet
+          </button>
+
+          {/* Select from existing sheets dropdown */}
+          <div className="mt-2 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label
-                htmlFor={sheetIdFieldId}
-                className="text-sm font-medium text-ink"
-              >
-                Use an existing sheet
-              </label>
+              <span className="text-sm font-medium text-ink">Use an existing sheet</span>
               <button
                 type="button"
                 onClick={() => void loadSheets()}
@@ -423,10 +384,8 @@ export function GoogleSheetsPanel({
                 {isLoadingSheets ? 'Loading…' : 'Refresh list'}
               </button>
             </div>
-
             {sheets.length > 0 ? (
               <select
-                id={sheetIdFieldId}
                 value={existingSheetId}
                 disabled={isBusy}
                 onChange={(event) => {
@@ -445,34 +404,11 @@ export function GoogleSheetsPanel({
               </select>
             ) : (
               <p className="text-sm text-ink-muted">
-                {isLoadingSheets
-                  ? 'Loading your spreadsheets…'
-                  : 'No spreadsheets found yet. Use "Refresh list", or paste a sheet id below.'}
+                {isLoadingSheets ? 'Loading your spreadsheets…' : 'No spreadsheets found. Click "Refresh list" to load them.'}
               </p>
             )}
-
-            {/* Manual id fallback. */}
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                aria-label="Sheet id"
-                placeholder="…or paste a sheet id"
-                value={existingSheetId}
-                disabled={isBusy}
-                onChange={(event) => setExistingSheetId(event.target.value)}
-                className="flex-1 rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={() => void handleSelectSheet()}
-                disabled={isBusy}
-                className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Select
-              </button>
-            </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Missing-column detail (Req 12.4) */}
@@ -494,32 +430,9 @@ export function GoogleSheetsPanel({
         </p>
       )}
 
-      {/* Target sheet status / missing-target guard (Req 13.3) */}
-      {target && target.spreadsheetId ? (
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-ink-muted">
-            Target sheet:{' '}
-            <span className="font-medium text-ink">
-              {target.sheetTitle || target.spreadsheetId}
-            </span>
-          </p>
-          {isTargetValid && (
-            <p role="status" className="text-sm font-medium text-emerald-700">
-              ✓ This sheet has all required columns and is ready for entries.
-            </p>
-          )}
-        </div>
-      ) : (
-        connection.connected && (
-          <p role="status" aria-live="polite" className="text-sm text-ink-muted">
-            Create or choose a target sheet before writing entries.
-          </p>
-        )
-      )}
-
       {/* Transient status confirmations */}
       {statusMessage && (
-        <p role="status" aria-live="polite" className="text-sm text-emerald-700">
+        <p role="status" aria-live="polite" className="text-sm text-emerald-700 dark:text-emerald-400">
           {statusMessage}
         </p>
       )}
