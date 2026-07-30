@@ -31,7 +31,7 @@ export interface SoundDef {
  * level is set per playback by {@link createSoundPlayer} (louder for start
  * clicks, normal for end alarms). Cached per AudioContext.
  */
-const START_OUTPUT_GAIN = 2.4; // start clicks: louder
+const START_OUTPUT_GAIN = 3.5; // start clicks: louder
 const END_OUTPUT_GAIN = 1.8;  // end alarms/beeps: louder
 const masterGains = new WeakMap<AudioContext, GainNode>();
 function getMasterGain(ctx: AudioContext): GainNode {
