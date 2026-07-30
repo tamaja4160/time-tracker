@@ -31,8 +31,8 @@ export interface SoundDef {
  * level is set per playback by {@link createSoundPlayer} (louder for start
  * clicks, normal for end alarms). Cached per AudioContext.
  */
-const START_OUTPUT_GAIN = 1.6; // start clicks: a bit louder / more intense
-const END_OUTPUT_GAIN = 1.0; // end alarms/beeps: normal volume
+const START_OUTPUT_GAIN = 2.4; // start clicks: louder
+const END_OUTPUT_GAIN = 1.8;  // end alarms/beeps: louder
 const masterGains = new WeakMap<AudioContext, GainNode>();
 function getMasterGain(ctx: AudioContext): GainNode {
   let g = masterGains.get(ctx);
@@ -259,7 +259,7 @@ const DEFAULT_SELECTION: Record<SoundKind, string> = {
   start: 'low-tock',
   end: 'gentle-chime',
 };
-const DEFAULT_VOLUME = 0.8;
+const DEFAULT_VOLUME = 1.0;
 
 /** Seconds ahead of `AudioContext.currentTime` to schedule audio, avoiding glitches. */
 const AUDIO_LOOKAHEAD_SEC = 0.02;
