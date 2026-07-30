@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>focus log</title>
+    <title>focus log — track 15-minute focus sessions</title>
+    <meta name="description" content="focus log is a free productivity timer that helps you run 15-minute focus sessions, log your output, and sync your activity to Google Sheets." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500;700&family=Hammersmith+One&display=swap" rel="stylesheet" />
@@ -15,9 +16,47 @@
     <!-- Google Identity Services (client-only Option A auth). Provides
          window.google.accounts.oauth2 used by src/infra/googleAuth.ts. -->
     <script src="https://accounts.google.com/gsi/client" async></script>
+    <style>
+      #prerender {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 0 24px;
+        color: #1d1d1f;
+      }
+      #prerender h1 { font-size: 2rem; font-weight: 700; margin-bottom: 12px; }
+      #prerender p { font-size: 1rem; color: #6e6e73; line-height: 1.6; margin-bottom: 12px; }
+      #prerender a { color: #1d1d1f; }
+    </style>
   </head>
   <body>
+    <!-- Static content for crawlers and no-JS environments -->
+    <div id="prerender">
+      <h1>focus log</h1>
+      <p>
+        focus log is a free productivity timer that helps you run 15-minute focus sessions,
+        log your output after each session, and sync your activity log directly to a
+        Google Sheets spreadsheet you own.
+      </p>
+      <p>
+        The optional Google Sheets integration requests permission to write session data
+        to a spreadsheet in your own Google account. focus log does not store any personal
+        data on its servers.
+      </p>
+      <p>
+        <a href="/#/privacy">Privacy Policy</a> &middot;
+        <a href="/#/terms">Terms of Service</a>
+      </p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Hide the static prerender once React has loaded
+      document.getElementById('root').addEventListener('DOMSubtreeModified', function hide() {
+        var pre = document.getElementById('prerender');
+        if (pre) pre.style.display = 'none';
+        this.removeEventListener('DOMSubtreeModified', hide);
+      });
+    </script>
   </body>
 </html>
