@@ -350,7 +350,7 @@ export function GoogleSheetsPanel({
             aria-invalid={nameError !== null}
             aria-describedby={nameError ? nameErrorId : undefined}
             onChange={(event) => setNewSheetName(event.target.value)}
-            className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
+            className="rounded-md border border-black/10 dark:border-white/15 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
           />
           {nameError && (
             <p id={nameErrorId} role="alert" className="text-sm text-red-600">
@@ -388,7 +388,7 @@ export function GoogleSheetsPanel({
                   setExistingSheetId(id);
                   if (id) void handleSelectSheet(id);
                 }}
-                className="rounded-md border border-black/10 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-black/10 dark:border-white/15 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">— Choose one of your sheets —</option>
                 {sheets.map((s) => (

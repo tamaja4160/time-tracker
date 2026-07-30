@@ -24,7 +24,7 @@ export function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="rounded-4xl border border-black/5 bg-canvas shadow-card overflow-hidden">
+    <div className="rounded-4xl border border-black/5 bg-canvas shadow-card overflow-hidden dark:border-white/10">
       {/* Toggle button */}
       <button
         type="button"
@@ -62,7 +62,7 @@ export function CollapsibleSection({
 
       {/* Content — rendered but hidden so state inside children is preserved */}
       {open && (
-        <div className="border-t border-black/5 px-6 py-6 sm:px-7">
+        <div className="border-t border-black/5 px-6 py-6 dark:border-white/10 sm:px-7">
           {children}
         </div>
       )}
