@@ -179,7 +179,7 @@ export function App({
   // Reflect the remaining time in the browser tab title so a backgrounded tab
   // still shows the countdown; announce completion there too.
   useEffect(() => {
-    const base = 'focuslog';
+    const base = 'focus log';
     if (state.status === 'running') {
       document.title = `${formatRemaining(state.remainingSec)} · ${base}`;
     } else if (state.status === 'paused') {
@@ -353,7 +353,7 @@ export function App({
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-10 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <h1 className="text-lg font-semibold tracking-tight">focuslog</h1>
+          <h1 className="text-lg font-semibold tracking-tight">focus log</h1>
           <button
             type="button"
             aria-label="Open settings"
@@ -413,7 +413,7 @@ export function App({
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
         {/* Video — compact centered preview with label */}
         <div className="flex flex-col items-center gap-3">
-          <h2 className="text-xl font-bold tracking-tight text-ink">
+          <h2 className="text-2xl font-bold tracking-tight text-ink">
             How to boost productivity?
           </h2>
           <div className="w-48 overflow-hidden rounded-3xl border border-black/5 bg-white shadow-card sm:w-56">
@@ -449,7 +449,6 @@ export function App({
         {/* Google Sheets — label left, connect button right, no accordion. */}
         <CollapsibleSection
           label="Write to Google Sheets"
-          description="Write sessions straight to a spreadsheet you control."
         >
           <GoogleSheetsPanel
             authClient={authClient}
