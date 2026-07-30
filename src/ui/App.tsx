@@ -448,7 +448,7 @@ export function App({
 
         {/* Google Sheets — label left, connect button right, no accordion. */}
         <CollapsibleSection
-          label="Connect to Google Sheets"
+          label="Write to Google Sheets"
           description="Write sessions straight to a spreadsheet you control."
         >
           <GoogleSheetsPanel
