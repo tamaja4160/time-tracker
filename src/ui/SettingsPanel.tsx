@@ -152,10 +152,10 @@ export function SettingsPanel({
               />
             </div>
 
-            {/* Start sound */}
+            {/* Button sound */}
             <SoundSelector
               kind="start"
-              label="Start sound"
+              label="Button sound"
               sounds={START_SOUNDS}
               selected={selStart}
               disabled={!soundEnabled}
