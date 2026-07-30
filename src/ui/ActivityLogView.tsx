@@ -76,7 +76,7 @@ export function ActivityLogView({ entries, error, exportBar }: ActivityLogViewPr
                   End
                 </th>
                 <th scope="col" className="px-4 py-2.5 font-medium">
-                  Description
+                  Output
                 </th>
               </tr>
             </thead>

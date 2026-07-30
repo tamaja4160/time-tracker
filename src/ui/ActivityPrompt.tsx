@@ -28,7 +28,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { validateDescription } from '../domain/validation';
 
 /** Exact activity prompt copy mandated by Req 6.1. Rendered verbatim. */
-export const ACTIVITY_PROMPT_MESSAGE = 'What did you do (1 or 2 words)?';
+export const ACTIVITY_PROMPT_MESSAGE = 'What was your output?';
 
 const EMPTY_MESSAGE = 'Please enter a non-empty description.';
 const TOO_LONG_MESSAGE = 'Description must be 50 characters or fewer.';
