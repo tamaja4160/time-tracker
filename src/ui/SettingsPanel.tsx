@@ -18,6 +18,9 @@ export interface SettingsPanelProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
 
+  volume: number;
+  onSetVolume: (v: number) => void;
+
   selStart: string;
   selEnd: string;
   onSelectSound: (kind: SoundKind, id: string) => void;
@@ -32,6 +35,8 @@ export function SettingsPanel({
   onClose,
   soundEnabled,
   onToggleSound,
+  volume,
+  onSetVolume,
   selStart,
   selEnd,
   onSelectSound,
@@ -122,6 +127,29 @@ export function SettingsPanel({
                   }`}
                 />
               </button>
+            </div>
+
+            {/* Volume slider */}
+            <div className="mb-5 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="sound-volume" className="text-sm font-medium text-ink">
+                  Volume
+                </label>
+                <span className="text-xs tabular-nums text-ink-muted">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+              <input
+                id="sound-volume"
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume}
+                disabled={!soundEnabled}
+                onChange={(e) => onSetVolume(parseFloat(e.target.value))}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink/15 accent-ink disabled:cursor-not-allowed disabled:opacity-40"
+              />
             </div>
 
             {/* Start sound */}

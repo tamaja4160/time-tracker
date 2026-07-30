@@ -169,12 +169,21 @@ export function App({
   // Mirror of the persisted sound selections so the settings panel re-renders.
   const [selStart, setSelStart] = useState(() => sound.getSelection('start'));
   const [selEnd, setSelEnd] = useState(() => sound.getSelection('end'));
+  const [volume, setVolumeState] = useState(() => sound.getVolume());
 
   const handleSelectSound = useCallback(
     (kind: Parameters<typeof sound.setSelection>[0], id: string) => {
       sound.setSelection(kind, id);
       if (kind === 'start') setSelStart(id);
       else setSelEnd(id);
+    },
+    [sound],
+  );
+
+  const handleSetVolume = useCallback(
+    (v: number) => {
+      sound.setVolume(v);
+      setVolumeState(v);
     },
     [sound],
   );
@@ -435,6 +444,8 @@ export function App({
         selEnd={selEnd}
         onSelectSound={handleSelectSound}
         onPreviewSound={handlePreviewSound}
+        volume={volume}
+        onSetVolume={handleSetVolume}
         notifPermission={notifPermission}
         onEnableNotifications={enableNotifications}
       />

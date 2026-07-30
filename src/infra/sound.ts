@@ -237,6 +237,9 @@ export interface SoundPlayer {
   /** Get/set the selected sound id for a kind (persisted). */
   getSelection(kind: SoundKind): string;
   setSelection(kind: SoundKind, id: string): void;
+  /** Get/set master volume 0–1 (persisted). */
+  getVolume(): number;
+  setVolume(v: number): void;
   dispose(): void;
 }
 
@@ -251,11 +254,12 @@ function getAudioContextCtor(): AudioContextCtor | null {
   return w.AudioContext ?? w.webkitAudioContext ?? null;
 }
 
-const STORAGE_KEY = { start: 'timeTracker.sound.start', end: 'timeTracker.sound.end' };
+const STORAGE_KEY = { start: 'timeTracker.sound.start', end: 'timeTracker.sound.end', volume: 'timeTracker.sound.volume' };
 const DEFAULT_SELECTION: Record<SoundKind, string> = {
   start: 'low-tock',
   end: 'gentle-chime',
 };
+const DEFAULT_VOLUME = 0.8;
 
 /** Seconds ahead of `AudioContext.currentTime` to schedule audio, avoiding glitches. */
 const AUDIO_LOOKAHEAD_SEC = 0.02;
@@ -273,6 +277,8 @@ export function createSoundPlayer(): SoundPlayer {
     end: readPersisted('end'),
   };
 
+  let volume: number = readPersistedVolume();
+
   function readPersisted(kind: SoundKind): string {
     try {
       const v = window.localStorage.getItem(STORAGE_KEY[kind]);
@@ -281,6 +287,17 @@ export function createSoundPlayer(): SoundPlayer {
       /* ignore */
     }
     return DEFAULT_SELECTION[kind];
+  }
+
+  function readPersistedVolume(): number {
+    try {
+      const v = window.localStorage.getItem(STORAGE_KEY.volume);
+      if (v !== null) {
+        const n = parseFloat(v);
+        if (Number.isFinite(n) && n >= 0 && n <= 1) return n;
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_VOLUME;
   }
 
   function ensureCtx(): AudioContext | null {
@@ -299,9 +316,9 @@ export function createSoundPlayer(): SoundPlayer {
     const audio = ensureCtx();
     if (!audio) return;
     if (audio.state === 'suspended') void audio.resume().catch(() => {});
-    // Start clicks play a bit louder; end alarms stay at normal volume.
-    getMasterGain(audio).gain.value =
-      kind === 'start' ? START_OUTPUT_GAIN : END_OUTPUT_GAIN;
+    // Apply master volume, then kind-specific output gain on top.
+    const kindGain = kind === 'start' ? START_OUTPUT_GAIN : END_OUTPUT_GAIN;
+    getMasterGain(audio).gain.value = volume * kindGain;
     const def = catalog(kind).find((s) => s.id === id) ?? catalog(kind)[0];
     try {
       def.render(audio, audio.currentTime + AUDIO_LOOKAHEAD_SEC);
@@ -335,6 +352,17 @@ export function createSoundPlayer(): SoundPlayer {
         /* ignore */
       }
     },
+    getVolume() {
+      return volume;
+    },
+    setVolume(v: number) {
+      volume = Math.max(0, Math.min(1, v));
+      // Update live gain if context exists.
+      if (ctx) getMasterGain(ctx).gain.value = volume;
+      try {
+        window.localStorage.setItem(STORAGE_KEY.volume, String(volume));
+      } catch { /* ignore */ }
+    },
     dispose() {
       if (ctx) {
         void ctx.close().catch(() => {});
@@ -347,15 +375,16 @@ export function createSoundPlayer(): SoundPlayer {
 /** A no-op sound player for tests or when sound is disabled. */
 export function createNoopSoundPlayer(): SoundPlayer {
   const selection: Record<SoundKind, string> = { ...DEFAULT_SELECTION };
+  let volume = DEFAULT_VOLUME;
   return {
     unlock: () => {},
     preview: () => {},
     playStart: () => {},
     playAlarm: () => {},
     getSelection: (kind) => selection[kind],
-    setSelection: (kind, id) => {
-      selection[kind] = id;
-    },
+    setSelection: (kind, id) => { selection[kind] = id; },
+    getVolume: () => volume,
+    setVolume: (v) => { volume = v; },
     dispose: () => {},
   };
 }

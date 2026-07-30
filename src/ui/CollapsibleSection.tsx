@@ -30,7 +30,7 @@ export function CollapsibleSection({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-ink/[0.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-ring sm:px-7"
+        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-ink/[0.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink/30 sm:px-7"
       >
         <div className="flex flex-col">
           <span className="text-base font-semibold tracking-tight text-ink">

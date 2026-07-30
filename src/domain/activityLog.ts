@@ -104,14 +104,13 @@ function formatLocalDate(d: Date): string {
 }
 
 /**
- * Format a `Date` as 24-hour `HH:MM:SS` using its local-time-zone clock fields,
- * each component zero-padded to two digits (e.g. `09:00:00`).
+ * Format a `Date` as 24-hour `HH:MM` using its local-time-zone clock fields,
+ * each component zero-padded to two digits (e.g. `09:00`).
  */
 function formatLocalTime(d: Date): string {
   const hours = String(d.getHours()).padStart(2, '0');
   const minutes = String(d.getMinutes()).padStart(2, '0');
-  const seconds = String(d.getSeconds()).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+  return `${hours}:${minutes}`;
 }
 
 /**
