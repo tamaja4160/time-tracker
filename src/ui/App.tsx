@@ -529,7 +529,7 @@ export function App({
         submitError={activitySubmitError}
       />
 
-      <footer className="border-t border-black/5 px-6 py-5 text-center text-xs text-ink-muted/50">
+      <footer className="border-t border-black/5 px-6 py-5 text-center text-xs text-[#b0b0b5] dark:text-[#4a4a4f]">
         <p className="mx-auto mb-3 max-w-sm leading-relaxed">
           The optional Google Sheets integration asks for permission to write your session data directly to a spreadsheet in your own Google account. We do not store your data on any server.
         </p>
