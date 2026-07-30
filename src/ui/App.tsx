@@ -476,15 +476,6 @@ export function App({
           <p className="max-w-sm text-base text-ink-muted leading-relaxed">
             Track 15-minute focus sessions, log your output, and see exactly where your time goes — synced straight to Google Sheets.
           </p>
-          <p className="max-w-sm text-sm text-ink-muted leading-relaxed">
-            The optional Google Sheets integration asks for permission to write your session data directly to a spreadsheet in your own Google account. We do not store your data on any server.
-          </p>
-          <a
-            href="#/privacy"
-            className="text-sm font-medium text-ink underline underline-offset-2 hover:text-ink-soft transition-colors"
-          >
-            Privacy Policy
-          </a>
         </div>
 
         {/* Video — compact centered preview */}
@@ -538,10 +529,13 @@ export function App({
         submitError={activitySubmitError}
       />
 
-      <footer className="border-t border-black/5 px-6 py-5 text-center text-xs text-ink-muted">
-        <a href="#/privacy" className="hover:text-ink transition-colors">Privacy Policy</a>
+      <footer className="border-t border-black/5 px-6 py-5 text-center text-xs text-ink-muted/50">
+        <p className="mx-auto mb-3 max-w-sm leading-relaxed">
+          The optional Google Sheets integration asks for permission to write your session data directly to a spreadsheet in your own Google account. We do not store your data on any server.
+        </p>
+        <a href="#/privacy" className="hover:text-ink-muted transition-colors">Privacy Policy</a>
         <span className="mx-2">·</span>
-        <a href="#/terms" className="hover:text-ink transition-colors">Terms of Service</a>
+        <a href="#/terms" className="hover:text-ink-muted transition-colors">Terms of Service</a>
       </footer>
     </div>
   );
