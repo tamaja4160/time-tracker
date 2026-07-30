@@ -468,6 +468,16 @@ export function App({
       </div>
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-8">
+        {/* Hero — purpose statement for new visitors */}
+        <div className="flex flex-col items-center gap-3 text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-ink leading-tight">
+            Have the most productive<br />week of your life.
+          </h2>
+          <p className="max-w-sm text-base text-ink-muted leading-relaxed">
+            Track 15-minute focus sessions, log your output, and see exactly where your time goes — synced straight to Google Sheets.
+          </p>
+        </div>
+
         {/* Video — compact centered preview with label */}
         <div className="flex flex-col items-center gap-3">
           <h2 className="text-2xl font-bold tracking-tight text-ink">
