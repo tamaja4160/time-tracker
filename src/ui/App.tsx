@@ -179,7 +179,7 @@ export function App({
   // Reflect the remaining time in the browser tab title so a backgrounded tab
   // still shows the countdown; announce completion there too.
   useEffect(() => {
-    const base = 'FocusLog';
+    const base = 'focuslog';
     if (state.status === 'running') {
       document.title = `${formatRemaining(state.remainingSec)} · ${base}`;
     } else if (state.status === 'paused') {
@@ -353,7 +353,7 @@ export function App({
     <div className="min-h-screen bg-canvas text-ink">
       <header className="sticky top-0 z-10 border-b border-black/5 bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <h1 className="text-lg font-semibold tracking-tight">FocusLog</h1>
+          <h1 className="text-lg font-semibold tracking-tight">focuslog</h1>
           <button
             type="button"
             aria-label="Open settings"
