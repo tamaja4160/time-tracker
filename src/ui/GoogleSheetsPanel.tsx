@@ -31,7 +31,6 @@
  * _Requirements: 11.6, 11.7, 12.1, 12.4, 12.5, 12.6, 13.2, 13.3_
  */
 import { useEffect, useId, useState } from 'react';
-import type { TargetSheet } from '../types';
 import { validateSheetName } from '../domain/validation';
 import {
   GoogleAuthError,
@@ -99,8 +98,6 @@ export function GoogleSheetsPanel({
   const [needsReauth, setNeedsReauth] = useState(false);
   const [isBusy, setBusy] = useState(false);
 
-  const [target, setTarget] = useState<TargetSheet | null>(null);
-
   const [newSheetName, setNewSheetName] = useState(DEFAULT_SHEET_NAME);
   const [existingSheetId, setExistingSheetId] = useState('');
   const [sheets, setSheets] = useState<SpreadsheetSummary[]>([]);
@@ -166,20 +163,6 @@ export function GoogleSheetsPanel({
         void loadSheets();
       }
     })();
-    try {
-      const savedTargetId = authClient.getTargetSheetId();
-      if (savedTargetId) {
-        // We only know the id from persisted metadata; reflect it as a target
-        // pending re-validation on next select. Title is unknown until selected.
-        setTarget({
-          spreadsheetId: savedTargetId,
-          sheetTitle: '',
-          hasRequiredColumns: true,
-        });
-      }
-    } catch {
-      // Auth-store read failures are surfaced via refreshStatus paths; ignore here.
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -253,7 +236,6 @@ export function GoogleSheetsPanel({
     try {
       const created = await sheetsConnector.createSheet(nameValidation.value);
       authClient.setTargetSheetId(created.spreadsheetId);
-      setTarget(created);
       setStatusMessage(`Created and selected "${created.sheetTitle}".`);
       void loadSheets();
     } catch (err) {
@@ -275,7 +257,6 @@ export function GoogleSheetsPanel({
     try {
       const selected = await sheetsConnector.selectSheet(trimmedId);
       authClient.setTargetSheetId(selected.spreadsheetId);
-      setTarget(selected);
       setStatusMessage(`Selected "${selected.sheetTitle}". This sheet is valid.`);
     } catch (err) {
       handleSheetsError(err, 'Could not select the sheet.');
