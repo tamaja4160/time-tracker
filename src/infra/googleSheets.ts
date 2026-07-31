@@ -155,22 +155,12 @@ interface ValueRange {
   values?: string[][];
 }
 
-/** Subset of the Drive `files.list` response this module reads. */
-interface DriveFileList {
-  files?: Array<{ id?: string; name?: string }>;
-}
-
 /* -------------------------------------------------------------------------- */
 /* Constants                                                                   */
 /* -------------------------------------------------------------------------- */
 
 const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-/** Google Drive Files API, used to LIST the user's existing spreadsheets. */
-const DRIVE_FILES_API = 'https://www.googleapis.com/drive/v3/files';
-
-/** MIME type identifying Google Sheets files in Drive. */
-const SPREADSHEET_MIME = 'application/vnd.google-apps.spreadsheet';
 
 /** Range covering the first row across up to 702 columns (ZZ) for header validation. */
 const HEADER_READ_RANGE = 'A1:ZZ1';
@@ -194,12 +184,6 @@ const defaultSleep = (ms: number): Promise<void> =>
  */
 export interface BrowserSheetsConnector extends GoogleSheetsConnector {
   /**
-   * List the user's existing spreadsheets (id + name), most-recently-modified
-   * first, so the UI can offer a picker instead of a raw id field. Requires the
-   * `drive.metadata.readonly` scope.
-   */
-  listSpreadsheets(): Promise<SpreadsheetSummary[]>;
-  /**
    * Append with the Req 13.5 escalation policy: retry up to `maxAttempts` times
    * at `retryDelayMs` intervals. On exhausting all attempts, throws a
    * `persistent_failure` {@link GoogleSheetsError} for a persistent error
@@ -208,7 +192,7 @@ export interface BrowserSheetsConnector extends GoogleSheetsConnector {
   appendRowWithEscalation(target: TargetSheet, entry: LogEntry): Promise<void>;
 }
 
-/** A lightweight summary of a spreadsheet for the selection picker. */
+/** A lightweight summary of a spreadsheet returned by the Picker. */
 export interface SpreadsheetSummary {
   id: string;
   name: string;
@@ -457,30 +441,6 @@ export function createGoogleSheetsConnector(
   }
 
   return {
-    async listSpreadsheets(): Promise<SpreadsheetSummary[]> {
-      // Withhold and prompt sign-in if there is no valid auth (Req 12.6).
-      requireAccessToken();
-      const query = encodeURIComponent(
-        `mimeType='${SPREADSHEET_MIME}' and trashed=false`,
-      );
-      const url =
-        `${DRIVE_FILES_API}?q=${query}` +
-        `&fields=${encodeURIComponent('files(id,name)')}` +
-        `&orderBy=${encodeURIComponent('modifiedTime desc')}` +
-        `&pageSize=100`;
-      const list = await apiRequest<DriveFileList>(
-        url,
-        { method: 'GET' },
-        'request_failed',
-        'Could not list your spreadsheets.',
-      );
-      return (list.files ?? [])
-        .filter((f): f is { id: string; name: string } =>
-          typeof f.id === 'string' && f.id.length > 0,
-        )
-        .map((f) => ({ id: f.id, name: f.name ?? '(untitled)' }));
-    },
-
     async createSheet(name: string): Promise<TargetSheet> {
       // Withhold and prompt sign-in if there is no valid auth (Req 12.6).
       requireAccessToken();
@@ -605,3 +565,62 @@ export function createGoogleSheetsConnector(
   };
 }
 
+
+/* -------------------------------------------------------------------------- */
+/* Google Picker                                                               */
+/* -------------------------------------------------------------------------- */
+
+/** Options for {@link openPicker}. */
+export interface OpenPickerOptions {
+  /** A currently-valid OAuth access token with at least `drive.file` scope. */
+  accessToken: string;
+  /** The OAuth client ID — passed to `setAppId` so Drive can associate the pick. */
+  clientId: string;
+}
+
+/**
+ * Open the Google Picker filtered to Sheets and resolve with the selected
+ * spreadsheet's id and name, or `null` if the user cancelled.
+ *
+ * Uses only the `drive.file` scope — no sensitive Drive scope required.
+ * Loads `gapi.client` lazily on first call; subsequent calls reuse the
+ * already-loaded library.
+ */
+export function openPicker(options: OpenPickerOptions): Promise<SpreadsheetSummary | null> {
+  return new Promise((resolve, reject) => {
+    const gapi = window.gapi;
+    if (!gapi) {
+      reject(new Error('Google API (gapi) script is not loaded yet. Try again in a moment.'));
+      return;
+    }
+
+    gapi.load('picker', () => {
+      const picker = window.google?.picker;
+      if (!picker) {
+        reject(new Error('Google Picker library failed to load. Try again in a moment.'));
+        return;
+      }
+
+      const view = new picker.DocsView(picker.ViewId.SPREADSHEETS)
+        .setMimeTypes('application/vnd.google-apps.spreadsheet')
+        .setMode(picker.DocsViewMode.LIST);
+
+      const built = new picker.PickerBuilder()
+        .setTitle('Select a Google Sheet')
+        .addView(view)
+        .setOAuthToken(options.accessToken)
+        .setAppId(options.clientId.split('-')[0]) // numeric project ID prefix
+        .setCallback((data) => {
+          if (data.action === picker.Action.PICKED && data.docs?.[0]) {
+            const doc = data.docs[0];
+            resolve({ id: doc.id, name: doc.name });
+          } else if (data.action === picker.Action.CANCEL) {
+            resolve(null);
+          }
+        })
+        .build();
+
+      built.setVisible(true);
+    });
+  });
+}

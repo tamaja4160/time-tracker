@@ -7,7 +7,7 @@
  * expiry, and Vitest fake timers drive the timeout path.
  *
  * Coverage map:
- * - 11.1  consent launch forces prompt 'consent' with spreadsheets + drive.file scopes
+ * - 11.1  consent launch forces prompt 'consent' with drive.file scope
  * - 11.2  access token + expiry derived from expires_in and injected now() are cached
  * - 11.3  a cached, unexpired token reports connected without a new consent launch
  * - 11.4/11.7  once now() passes expiresAtMs, isTokenExpired() signals re-auth
@@ -134,17 +134,13 @@ describe('consent launch (Req 11.1)', () => {
     expect(gis.configs).toHaveLength(1);
     expect(gis.configs[0].client_id).toBe(CLIENT_ID);
     expect(gis.configs[0].scope).toBe(
-      'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly',
-    );
-    expect(gis.configs[0].scope).toContain(
-      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive.file',
     );
     expect(gis.configs[0].scope).toContain(
       'https://www.googleapis.com/auth/drive.file',
     );
-    // drive.metadata.readonly lets the app list the user's existing sheets.
     expect(gis.configs[0].scope).toContain(
-      'https://www.googleapis.com/auth/drive.metadata.readonly',
+      'https://www.googleapis.com/auth/drive.file',
     );
   });
 });

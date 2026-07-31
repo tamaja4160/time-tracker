@@ -1,56 +1,29 @@
 /**
- * `GoogleSheetsPanel` (UI layer) — task 13.6.
+ * `GoogleSheetsPanel` — Google Sheets connect / create / select panel.
  *
- * Presentational panel for the client-only Google Sheets integration
- * (Option A). It drives connect / sign-out, target-sheet selection (create new
- * or pick existing), and surfaces the write-guard prompts. All Google access
- * goes through the injected {@link BrowserAuthClient} and
- * {@link BrowserSheetsConnector}, so the panel stays testable and the real
- * wiring (task 14.1) supplies concrete instances.
- *
- * Behaviour:
- * - Connect / sign-out controls call `authClient.connect()` / `signOut()` and
- *   show the current connection status. A connect failure surfaces a
- *   cause-specific message and leaves the Retry affordance in place (Req 11.6).
- *   When the cached token is expired/absent (`needsReauth`), a re-authorization
- *   prompt is shown before any write (Req 11.7).
- * - New-sheet flow: a name field defaulting to "Time Tracker" is validated live
- *   as the user types via the pure {@link validateSheetName} (1–100 chars). The
- *   confirm action is blocked until the name is valid (Req 12.1, 12.5). On
- *   confirm it calls `connector.createSheet(name)` and persists the target via
- *   `authClient.setTargetSheetId`.
- * - Select-existing flow: a sheet-id field calls `connector.selectSheet(id)`.
- *   On a `missing_columns` error it lists exactly which columns are missing and
- *   keeps the previously designated target unchanged (Req 12.4).
- * - Write guards: missing auth surfaces a "sign in" prompt (Req 13.2) and a
- *   missing target surfaces a "create or choose a sheet" prompt (Req 13.3).
- *
- * Secrets stay out of this component — it only ever deals with the target sheet
- * id and non-secret status; the access token never leaves the auth layer.
- *
- * _Requirements: 11.6, 11.7, 12.1, 12.4, 12.5, 12.6, 13.2, 13.3_
+ * Uses the Google Picker API (drive.file scope only — no sensitive scopes)
+ * to let users select an existing sheet from their Drive.
  */
 import { useEffect, useId, useState } from 'react';
 import { validateSheetName } from '../domain/validation';
+import { REQUIRED_COLUMNS } from '../domain/sheetsMapping';
 import {
   GoogleAuthError,
   type BrowserAuthClient,
 } from '../infra/authClient';
 import {
   GoogleSheetsError,
+  openPicker,
   type BrowserSheetsConnector,
-  type SpreadsheetSummary,
 } from '../infra/googleSheets';
+import type { TargetSheet } from '../types';
 
-/** Default name offered for a newly created sheet (Req 12.1). */
-export const DEFAULT_SHEET_NAME = 'focus log - activity log';
+/** Default name offered for a newly created sheet. */
+export const DEFAULT_SHEET_NAME = 'FocusLog';
 
 export interface GoogleSheetsPanelProps {
-  /** Browser auth client (connect / sign-out / status / target sheet id). */
   authClient: BrowserAuthClient;
-  /** Browser Sheets connector (create / select / append). */
   sheetsConnector: BrowserSheetsConnector;
-  /** Optional sink for surfacing errors to a shared app-level banner. */
   onError?: (msg: string) => void;
 }
 
@@ -59,7 +32,6 @@ interface ConnectionState {
   expiresAtMs: number | null;
 }
 
-/** Map a connect failure to a cause-specific, user-facing message (Req 11.6). */
 function describeConnectError(err: unknown): string {
   if (err instanceof GoogleAuthError) {
     switch (err.cause) {
@@ -96,12 +68,12 @@ export function GoogleSheetsPanel({
     expiresAtMs: null,
   });
   const [needsReauth, setNeedsReauth] = useState(false);
-  const [isBusy, setBusy] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
+
+  const [target, setTarget] = useState<TargetSheet | null>(null);
+  const [isTargetValid, setIsTargetValid] = useState(false);
 
   const [newSheetName, setNewSheetName] = useState(DEFAULT_SHEET_NAME);
-  const [existingSheetId, setExistingSheetId] = useState('');
-  const [sheets, setSheets] = useState<SpreadsheetSummary[]>([]);
-  const [isLoadingSheets, setLoadingSheets] = useState(false);
 
   const [connectError, setConnectError] = useState<string | null>(null);
   const [sheetError, setSheetError] = useState<string | null>(null);
@@ -111,7 +83,6 @@ export function GoogleSheetsPanel({
   const nameFieldId = useId();
   const nameErrorId = useId();
 
-  // Live validation of the new-sheet name as the user types (Req 12.5).
   const nameValidation = validateSheetName(newSheetName);
   const nameError = nameValidation.ok
     ? null
@@ -119,12 +90,10 @@ export function GoogleSheetsPanel({
       ? 'Enter a sheet name (1–100 characters).'
       : 'Sheet name must be 100 characters or fewer.';
 
-  /** Surface an error both locally and via the optional onError sink. */
-  function reportError(message: string): void {
+  function emitError(message: string): void {
     onError?.(message);
   }
 
-  /** Refresh connection status + re-auth signal from the auth client. */
   async function refreshStatus(): Promise<void> {
     try {
       const status = await authClient.getStatus();
@@ -136,57 +105,65 @@ export function GoogleSheetsPanel({
           ? err.message
           : 'Could not read the Google connection status.';
       setConnectError(message);
-      reportError(message);
+      emitError(message);
     }
   }
 
-  /** Load the user's existing spreadsheets for the picker (Req: selection UX). */
-  async function loadSheets(): Promise<void> {
-    setLoadingSheets(true);
-    try {
-      const found = await sheetsConnector.listSpreadsheets();
-      setSheets(found);
-    } catch (err) {
-      // Non-fatal: the manual id field remains available as a fallback.
-      handleSheetsError(err, 'Could not list your spreadsheets.');
-    } finally {
-      setLoadingSheets(false);
-    }
-  }
-
-  // Load the persisted connection status and target sheet id on mount (Req 11.3).
   useEffect(() => {
-    void (async () => {
-      await refreshStatus();
-      // If already connected from a previous session, populate the picker.
-      if (connection.connected && !authClient.needsReauth()) {
-        void loadSheets();
+    void refreshStatus();
+    try {
+      const savedId = authClient.getTargetSheetId();
+      if (savedId) {
+        setTarget({ spreadsheetId: savedId, sheetTitle: '', hasRequiredColumns: true });
       }
-    })();
+    } catch {
+      // surfaced via refreshStatus
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function handleSheetsError(err: unknown, fallback: string): void {
+    if (err instanceof GoogleSheetsError) {
+      if (err.cause === 'missing_columns') {
+        setMissingColumns(err.missing ?? []);
+        setSheetError(err.message);
+        emitError(err.message);
+        return;
+      }
+      if (err.cause === 'needs_sign_in') {
+        const msg = 'Sign in and connect to Google before choosing a sheet.';
+        setSheetError(msg);
+        emitError(msg);
+        return;
+      }
+      setSheetError(err.message);
+      emitError(err.message);
+      return;
+    }
+    const message = err instanceof Error ? err.message : fallback;
+    setSheetError(message);
+    emitError(message);
+  }
+
   async function handleConnect(): Promise<void> {
     setConnectError(null);
-    setBusy(true);
+    setIsBusy(true);
     try {
       await authClient.connect();
       await refreshStatus();
       setStatusMessage('Connected to Google.');
-      void loadSheets();
     } catch (err) {
-      // Cause-specific message; leave the Retry button available (Req 11.6).
       const message = describeConnectError(err);
       setConnectError(message);
-      reportError(message);
+      emitError(message);
     } finally {
-      setBusy(false);
+      setIsBusy(false);
     }
   }
 
   async function handleSignOut(): Promise<void> {
     setConnectError(null);
-    setBusy(true);
+    setIsBusy(true);
     try {
       await authClient.signOut();
       await refreshStatus();
@@ -195,98 +172,91 @@ export function GoogleSheetsPanel({
       const message =
         err instanceof Error ? err.message : 'Could not sign out of Google.';
       setConnectError(message);
-      reportError(message);
+      emitError(message);
     } finally {
-      setBusy(false);
+      setIsBusy(false);
     }
-  }
-
-  /** Shared handler for Sheets errors from create/select. */
-  function handleSheetsError(err: unknown, fallback: string): void {
-    if (err instanceof GoogleSheetsError) {
-      if (err.cause === 'missing_columns') {
-        // Keep the previously designated target unchanged (Req 12.4).
-        setMissingColumns(err.missing ?? []);
-        setSheetError(err.message);
-        reportError(err.message);
-        return;
-      }
-      if (err.cause === 'needs_sign_in') {
-        // Write/select guard: prompt sign-in (Req 12.6, 13.2).
-        setSheetError('Sign in and connect to Google before choosing a sheet.');
-        reportError('Sign in and connect to Google before choosing a sheet.');
-        return;
-      }
-      setSheetError(err.message);
-      reportError(err.message);
-      return;
-    }
-    const message = err instanceof Error ? err.message : fallback;
-    setSheetError(message);
-    reportError(message);
   }
 
   async function handleCreateSheet(): Promise<void> {
     setSheetError(null);
     setMissingColumns(null);
-    if (!nameValidation.ok) {
-      return; // blocked until the name is valid (Req 12.1, 12.5)
-    }
-    setBusy(true);
+    if (!nameValidation.ok) return;
+    setIsBusy(true);
     try {
       const created = await sheetsConnector.createSheet(nameValidation.value);
       authClient.setTargetSheetId(created.spreadsheetId);
+      setTarget(created);
+      setIsTargetValid(true);
       setStatusMessage(`Created and selected "${created.sheetTitle}".`);
-      void loadSheets();
     } catch (err) {
+      setIsTargetValid(false);
       handleSheetsError(err, 'Could not create the new sheet.');
     } finally {
-      setBusy(false);
+      setIsBusy(false);
     }
   }
 
-  async function handleSelectSheet(idOverride?: string): Promise<void> {
+  async function handleBrowseSheets(): Promise<void> {
     setSheetError(null);
     setMissingColumns(null);
-    const trimmedId = (idOverride ?? existingSheetId).trim();
-    if (trimmedId.length === 0) {
-      setSheetError('Choose a sheet from the list or enter its id.');
+
+    const accessToken = authClient.getAccessToken();
+    if (!accessToken) {
+      setSheetError('Connect to Google first, then browse your sheets.');
       return;
     }
-    setBusy(true);
+
+    const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID as string) ?? '';
+
+    let picked: { id: string; name: string } | null;
     try {
-      const selected = await sheetsConnector.selectSheet(trimmedId);
-      authClient.setTargetSheetId(selected.spreadsheetId);
-      setStatusMessage(`Selected "${selected.sheetTitle}". This sheet is valid.`);
+      picked = await openPicker({ accessToken, clientId });
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not open the sheet picker.';
+      setSheetError(message);
+      emitError(message);
+      return;
+    }
+
+    if (!picked) return; // user cancelled
+
+    setIsBusy(true);
+    try {
+      const selected = await sheetsConnector.selectSheet(picked.id);
+      authClient.setTargetSheetId(selected.spreadsheetId);
+      setTarget(selected);
+      setIsTargetValid(true);
+      setStatusMessage(`Selected "${selected.sheetTitle}". Ready to write.`);
+    } catch (err) {
+      setIsTargetValid(false);
       handleSheetsError(err, 'Could not select the sheet.');
     } finally {
-      setBusy(false);
+      setIsBusy(false);
     }
   }
 
-  const connected = connection.connected && !needsReauth;
+  const isConnected = connection.connected && !needsReauth;
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Status line */}
-      <p className="text-sm font-medium">
+
+      {/* Connection status */}
+      <p className="text-sm font-medium text-ink">
         Status:{' '}
-        {connected ? (
-          <span className="text-emerald-600 dark:text-emerald-400">Connected</span>
-        ) : (
-          <span className="text-red-600 dark:text-red-400">Not connected</span>
-        )}
+        <span className={isConnected ? 'text-emerald-600' : 'text-ink-muted'}>
+          {isConnected ? 'Connected' : 'Not connected'}
+        </span>
       </p>
 
-      {/* Connect / sign-out controls */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Connect / sign-out */}
+      <div className="flex flex-wrap gap-2">
         {!connection.connected || needsReauth ? (
           <button
             type="button"
             onClick={() => void handleConnect()}
             disabled={isBusy}
-            className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {needsReauth ? 'Re-authorize Google' : 'Connect Google'}
           </button>
@@ -295,120 +265,127 @@ export function GoogleSheetsPanel({
             type="button"
             onClick={() => void handleSignOut()}
             disabled={isBusy}
-            className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-ink/5 px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Sign out
           </button>
         )}
       </div>
 
-      {/* Re-auth prompt (Req 11.7) */}
+      {/* Re-auth warning */}
       {connection.connected && needsReauth && (
-        <p role="status" aria-live="polite" className="text-sm text-amber-700 dark:text-amber-400">
-          Your Google authorization has expired. Re-authorize before writing
-          to the spreadsheet.
+        <p role="status" aria-live="polite" className="text-sm text-amber-700">
+          Your Google authorization has expired. Re-authorize before writing to the spreadsheet.
         </p>
       )}
 
-      {/* Connect error (Req 11.6) */}
       {connectError && (
-        <p role="alert" className="text-sm text-red-600">
-          {connectError}
-        </p>
+        <p role="alert" className="text-sm text-red-600">{connectError}</p>
       )}
 
-      {/* Create-new-sheet flow — only when connected (Req 12.1, 12.5) */}
-      {connected && (
-        <div className="flex flex-col gap-2">
-          <label htmlFor={nameFieldId} className="text-sm font-medium text-ink">
-            Create a new sheet
-          </label>
-          <input
-            id={nameFieldId}
-            type="text"
-            value={newSheetName}
-            disabled={isBusy}
-            aria-invalid={nameError !== null}
-            aria-describedby={nameError ? nameErrorId : undefined}
-            onChange={(event) => setNewSheetName(event.target.value)}
-            className="rounded-md border border-black/10 dark:border-white/15 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-red-500"
-          />
-          {nameError && (
-            <p id={nameErrorId} role="alert" className="text-sm text-red-600">
-              {nameError}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => void handleCreateSheet()}
-            disabled={isBusy || !nameValidation.ok}
-            className="self-start rounded-full bg-ink px-5 py-2 text-sm font-medium text-canvas transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Create sheet
-          </button>
+      {/* Sheet selection — only when connected */}
+      {isConnected && (
+        <div className="flex flex-col gap-4">
 
-          {/* Select from existing sheets dropdown */}
-          <div className="mt-2 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-ink">Use an existing sheet</span>
+          {/* Create new sheet */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor={nameFieldId} className="text-sm font-medium text-ink">
+              Create a new sheet
+            </label>
+            <div className="flex gap-2">
+              <input
+                id={nameFieldId}
+                type="text"
+                value={newSheetName}
+                disabled={isBusy}
+                aria-invalid={nameError !== null}
+                aria-describedby={nameError ? nameErrorId : undefined}
+                onChange={(e) => setNewSheetName(e.target.value)}
+                className="flex-1 rounded-xl border border-black/10 bg-canvas px-3 py-2 text-sm text-ink focus:border-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring disabled:opacity-50 aria-[invalid=true]:border-red-500"
+              />
               <button
                 type="button"
-                onClick={() => void loadSheets()}
-                disabled={isBusy || isLoadingSheets}
-                className="text-xs font-medium text-ink hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => void handleCreateSheet()}
+                disabled={isBusy || !nameValidation.ok}
+                className="rounded-full bg-ink px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-ink-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isLoadingSheets ? 'Loading…' : 'Refresh list'}
+                Create
               </button>
             </div>
-            {sheets.length > 0 ? (
-              <select
-                value={existingSheetId}
-                disabled={isBusy}
-                onChange={(event) => {
-                  const id = event.target.value;
-                  setExistingSheetId(id);
-                  if (id) void handleSelectSheet(id);
-                }}
-                className="rounded-md border border-black/10 dark:border-white/15 bg-canvas px-2 py-1 text-sm text-ink disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">— Choose one of your sheets —</option>
-                {sheets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <p className="text-sm text-ink-muted">
-                {isLoadingSheets ? 'Loading your spreadsheets…' : 'No spreadsheets found. Click "Refresh list" to load them.'}
-              </p>
+            {nameError && (
+              <p id={nameErrorId} role="alert" className="text-sm text-red-600">{nameError}</p>
             )}
+          </div>
+
+          {/* Required columns info */}
+          <div className="rounded-xl bg-canvas px-4 py-3 text-sm text-ink-muted">
+            <p className="font-medium text-ink-soft">
+              Existing sheets must have these columns in row 1:
+            </p>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {REQUIRED_COLUMNS.map((col) => (
+                <li key={col} className="rounded-lg bg-white px-2 py-0.5 font-mono text-xs ring-1 ring-black/8">
+                  {col}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Browse existing sheets via Google Picker */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-ink">Use an existing sheet</span>
+            <button
+              type="button"
+              onClick={() => void handleBrowseSheets()}
+              disabled={isBusy}
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white px-5 py-2 text-sm font-medium text-ink transition-colors hover:bg-canvas focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h9A1.5 1.5 0 0 1 14 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 12.5v-9Z" stroke="currentColor" strokeWidth="1.25"/>
+                <path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+              </svg>
+              Browse your sheets
+            </button>
+            <p className="text-xs text-ink-muted">
+              Opens Google's file picker — pick a sheet from your Drive directly.
+            </p>
           </div>
         </div>
       )}
 
-      {/* Missing-column detail (Req 12.4) */}
+      {/* Missing columns detail */}
       {missingColumns && missingColumns.length > 0 && (
         <div role="alert" className="text-sm text-red-600">
           <p>The selected sheet is missing required column(s):</p>
-          <ul className="list-inside list-disc">
-            {missingColumns.map((column) => (
-              <li key={column}>{column}</li>
-            ))}
+          <ul className="mt-1 list-inside list-disc">
+            {missingColumns.map((col) => <li key={col}>{col}</li>)}
           </ul>
         </div>
       )}
 
-      {/* Generic sheet error */}
       {sheetError && !missingColumns && (
-        <p role="alert" className="text-sm text-red-600">
-          {sheetError}
-        </p>
+        <p role="alert" className="text-sm text-red-600">{sheetError}</p>
       )}
 
-      {/* Transient status confirmations */}
+      {/* Target sheet status */}
+      {target?.spreadsheetId && (
+        <div className="flex flex-col gap-0.5">
+          <p className="text-sm text-ink-muted">
+            Target sheet:{' '}
+            <span className="font-medium text-ink">
+              {target.sheetTitle || target.spreadsheetId}
+            </span>
+          </p>
+          {isTargetValid && (
+            <p role="status" className="text-sm font-medium text-emerald-700">
+              ✓ Sheet is valid and ready for entries.
+            </p>
+          )}
+        </div>
+      )}
+
       {statusMessage && (
-        <p role="status" aria-live="polite" className="text-sm text-emerald-700 dark:text-emerald-400">
+        <p role="status" aria-live="polite" className="text-sm text-emerald-700">
           {statusMessage}
         </p>
       )}

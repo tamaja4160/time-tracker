@@ -51,6 +51,8 @@ function makeFakeAuthClient(): BrowserAuthClient {
   return {
     getStatus: async () => ({ connected: false, expiresAtMs: null }),
     needsReauth: () => false,
+    getAccessToken: () => null,
+    getMeta: () => ({ connected: false, expiresAtMs: null, targetSheetId: null }),
     getTargetSheetId: () => null,
     setTargetSheetId: () => {},
     connect: async () => {},
@@ -86,8 +88,10 @@ async function renderApp(clock: FakeClock, initialDurationSec?: number) {
       sheetsConnector={makeFakeSheetsConnector()}
     />,
   );
-  // Flush the mount effect's async getStatus() resolution (microtask).
+  // Flush async mount effects (getStatus, etc.) with fake timers active.
   await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
   });
   return utils;
@@ -192,10 +196,12 @@ describe('App component/DOM behaviour (fake timers)', () => {
 
     // Advance to (and past) zero: the session completes and the prompt opens.
     advance(SECONDS_PER_MINUTE * 1000);
+    // Flush any pending microtasks from async effects.
+    await act(async () => { await Promise.resolve(); });
 
-    const dialog = screen.getByRole('dialog', { name: /what did you do/i });
+    const dialog = screen.getByRole('dialog', { name: /what was your output/i });
     expect(
-      within(dialog).getByText('What did you do (1 or 2 words)?'),
+      within(dialog).getByText('What was your output?'),
     ).toBeInTheDocument();
     expect(screen.getByRole('timer')).toHaveTextContent('00:00');
 
@@ -206,7 +212,7 @@ describe('App component/DOM behaviour (fake timers)', () => {
 
     expect(screen.getByText('wrote tests')).toBeInTheDocument();
     // The prompt closed and the empty-state is gone now there is an entry.
-    expect(screen.queryByRole('dialog', { name: /what did you do/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /what was your output/i })).not.toBeInTheDocument();
     expect(
       screen.queryByText(/no activity has been logged yet/i),
     ).not.toBeInTheDocument();

@@ -14,6 +14,9 @@
     <!-- Google Identity Services (client-only Option A auth). Provides
          window.google.accounts.oauth2 used by src/infra/googleAuth.ts. -->
     <script src="https://accounts.google.com/gsi/client" async></script>
+    <!-- Google Picker API — used by GoogleSheetsPanel to let users pick an
+         existing sheet from their Drive without requiring sensitive scopes. -->
+    <script src="https://apis.google.com/js/api.js" async></script>
     <style>
       #prerender {
         display: none;

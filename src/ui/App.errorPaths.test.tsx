@@ -41,6 +41,7 @@ function makeStubAuth(
     getTargetSheetId: () => null,
     setTargetSheetId: () => {},
     needsReauth: () => true,
+    getAccessToken: () => null,
     ...overrides,
   };
 }
@@ -87,7 +88,7 @@ describe('App default duration', () => {
       />,
     );
     // Let the panel's async mount status settle inside act().
-    await act(async () => {});
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); });
 
     expect(screen.getByRole('timer')).toHaveTextContent('15:00');
     // The default duration is in genuine use, so no fallback badge is shown.
@@ -135,7 +136,7 @@ describe('Append/persist failure retention (Req 7.5)', () => {
       />,
     );
     // Let the panel's async mount status settle inside act().
-    await act(async () => {});
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); });
 
     // Start a 1-minute session (duration set via initialDurationSec prop).
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
@@ -145,15 +146,16 @@ describe('Append/persist failure retention (Req 7.5)', () => {
       clock.advance(60_000);
       vi.advanceTimersByTime(300);
     });
+    await act(async () => { await Promise.resolve(); });
 
     // The activity prompt is now open; submit a valid description.
-    const dialog = screen.getByRole('dialog', { name: /what did you do/i });
+    const dialog = screen.getByRole('dialog', { name: /what was your output/i });
     const input = within(dialog).getByRole('textbox') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'wrote tests' } });
     fireEvent.click(within(dialog).getByRole('button', { name: /save/i }));
 
     // The prompt stays open with the entered text retained (Req 7.5).
-    const stillOpen = screen.getByRole('dialog', { name: /what did you do/i });
+    const stillOpen = screen.getByRole('dialog', { name: /what was your output/i });
     expect(stillOpen).toBeInTheDocument();
     expect(
       (within(stillOpen).getByRole('textbox') as HTMLInputElement).value,

@@ -101,16 +101,13 @@ declare global {
 /* -------------------------------------------------------------------------- */
 
 /**
- * OAuth scopes requested on connect:
- * - `spreadsheets`: read/write the user's Google Sheets.
- * - `drive.file`: create new spreadsheets owned by this app.
+ * OAuth scopes requested on connect.
+ * `drive.file` is non-sensitive — no Google verification required.
+ * It allows creating new spreadsheets and reading/writing files the
+ * user explicitly picks via the Google Picker.
  */
 export const GOOGLE_AUTH_SCOPES = [
-  'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/drive.file',
-  // Read-only access to file metadata so the app can LIST the user's existing
-  // spreadsheets for selection (drive.file alone only sees app-created files).
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
 ] as const;
 
 /** Default time to wait for a consent/authorization response (Req 11.6). */

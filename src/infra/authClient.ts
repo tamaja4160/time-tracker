@@ -116,6 +116,11 @@ export interface BrowserAuthClient extends AuthClient {
    * `true` when the cached token is absent or expired (Option A ~1h limit).
    */
   needsReauth(): boolean;
+  /**
+   * Return the current access token string, or `null` if absent/expired.
+   * Used by the Google Picker which needs the raw token to open.
+   */
+  getAccessToken(): string | null;
 }
 
 /** Options for {@link createAuthClient}. */
@@ -280,6 +285,12 @@ export function createAuthClient(
       // Expired or absent token => re-authorization required before writes
       // (Req 11.7). This is the Option A ~1h limitation surfaced to the UI.
       return googleAuth.isTokenExpired();
+    },
+
+    getAccessToken(): string | null {
+      const token = googleAuth.getCachedToken();
+      if (!token || googleAuth.isTokenExpired(token)) return null;
+      return token.accessToken;
     },
   };
 }
